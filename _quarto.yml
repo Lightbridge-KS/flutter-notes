@@ -1,0 +1,28 @@
+project:
+  type: book
+
+book:
+  title: "Flutter Notes"
+  author: "Kittipos"
+  date: today
+  repo-url: https://github.com/Lightbridge-KS/flutter-notes
+  site-url: https://flutter-notes-lightbridge.netlify.app
+  chapters:
+    - index.qmd
+    - part: Dart Basic
+      chapters: 
+        - "content/dart-basic/dart-variable.qmd"
+    - part: Flutter Basic
+      chapters: 
+        - "content/flutter-basic/flutter-01-intro.qmd"
+
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+
+freeze: auto
