@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 70388356-33aa-4ff7-ba05-54282ae5bc95
+      url: https://flutter-notes-lightbridge.netlify.app
