@@ -1,64 +1,7 @@
-# Flutter's main.dart File
+---
+title: "Main"
+---
 
-
-::: {.callout-note appearance="minimal" collapse="true"}
-## `main.dart`
-
-```dart
-import 'package:english_words/english_words.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
-      child: MaterialApp(
-        title: 'Namer App',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        ),
-        home: MyHomePage(),
-      ),
-    );
-  }
-}
-
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-}
-
-class MyHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Text('A random NEXT  idea:'),
-          Text(appState.current.asLowerCase),
-          ElevatedButton(
-            onPressed: () {
-              print('button pressed!');
-            },
-            child: Text('Next'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-```
-:::
 
 Let me walk you through this main.dart file, which forms the foundation of your Flutter application. I'll explain the concepts in a way that connects to your experience with Python, JavaScript, and R.
 
@@ -71,6 +14,7 @@ import 'package:provider/provider.dart';
 ```
 
 These import statements bring in three packages:
+
 - `english_words`: A package containing random English word pairs (similar to importing a library like `nltk` in Python)
 - `flutter/material.dart`: The core Material Design widgets for Flutter (think of this like importing React components)
 - `provider`: A state management solution (comparable to Redux in JavaScript or reactive programming in R)
@@ -194,7 +138,7 @@ I'll break down this `BigCard` class to help you understand Dart's OOP syntax, e
 ### Class Declaration and Inheritance
 
 ```dart
-class BigCard extends StatelessWidget {
+class BigCard extends StatelessWidget 
 ```
 
 This line establishes several important things:
@@ -222,8 +166,9 @@ This is a constructor with named parameters in Dart. There's a lot happening in 
 3. `super.key` - This passes the `key` parameter up to the parent class (`StatelessWidget`). The `super` keyword refers to the parent class, similar to Python's `super()`. Keys are important in Flutter for widget identification and efficiency.
 
 4. `required this.pair` - This is where Dart gets interesting:
-   - `required` indicates this parameter must be provided (it can't be null or omitted)
-   - `this.pair` is a special shorthand syntax that both declares the parameter and assigns it to a class property in one step
+
+- `required` indicates this parameter must be provided (it can't be null or omitted)
+- `this.pair` is a special shorthand syntax that both declares the parameter and assigns it to a class property in one step
 
 This shorthand is equivalent to writing:
 
@@ -235,6 +180,7 @@ const BigCard({
 ```
 
 Or in a Python-like syntax:
+
 ```python
 def __init__(self, *, key=None, pair):
     super().__init__(key=key)
@@ -285,20 +231,6 @@ class BigCard(StatelessWidget):
         return Text(self.pair.as_lower_case)
 ```
 
-And in JavaScript-like syntax:
-
-```javascript
-class BigCard extends StatelessWidget {
-  constructor({key, pair}) {
-    super({key: key});
-    this.pair = pair;
-  }
-  
-  build(context) {
-    return Text(this.pair.asLowerCase);
-  }
-}
-```
 
 ### Key Concepts
 
