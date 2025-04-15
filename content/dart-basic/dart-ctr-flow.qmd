@@ -1,0 +1,541 @@
+# Control Flow Statements in Dart
+
+Control flow statements allow you to control the execution path of your program based on conditions or to repeat blocks of code. Coming from Python, you'll find many familiar concepts in Dart, though with some syntax differences. Let's explore each type of control flow statement in Dart.
+
+## Conditional Statements
+
+### If-Else Statements
+
+The basic if-else statement in Dart is similar to other languages:
+
+```dart
+void main() {
+  var temperature = 25;
+  
+  if (temperature > 30) {
+    print('It\'s hot outside!');
+  } else if (temperature > 20) {
+    print('It\'s a nice day!');
+  } else {
+    print('It\'s a bit cold!');
+  }
+}
+```
+
+Notice that unlike Python:
+- Dart uses curly braces `{}` to define code blocks
+- Conditions must be enclosed in parentheses `()`
+- No colon `:` is needed after the condition
+- Indentation is for readability but not syntactically significant
+
+### Conditional Expressions
+
+Dart offers two conditional expressions for concise code:
+
+#### Ternary Operator
+
+Similar to Python's ternary operator:
+
+```dart
+var result = condition ? valueIfTrue : valueIfFalse;
+
+// Example
+var age = 20;
+var status = age >= 18 ? 'Adult' : 'Minor';
+print(status); // Output: Adult
+```
+
+#### Null-Aware Operators
+
+Dart has special operators for handling null values:
+
+```dart
+// ?? (if-null operator): Returns the expression on the left if it's not null,
+// otherwise returns the expression on the right
+var name = userName ?? 'Guest';
+
+// ??= (null-aware assignment): Assigns a value only if the variable is null
+userName ??= 'Guest';
+
+// ?. (null-aware access): Accesses a property or calls a method only if the object is not null
+var length = userName?.length; // Returns null if userName is null
+```
+
+### Switch-Case Statements
+
+Dart's switch statement works with integers, strings, and compile-time constants:
+
+```dart
+void main() {
+  var grade = 'B';
+  
+  switch (grade) {
+    case 'A':
+      print('Excellent!');
+      break;
+    case 'B':
+      print('Good job!');
+      break;
+    case 'C':
+      print('Needs improvement');
+      break;
+    default:
+      print('Invalid grade');
+  }
+}
+```
+
+Important points:
+- Each case must end with a `break`, `continue`, `return`, or `throw`
+- If you want to fall through to the next case, use `continue` with a label
+- The `default` case handles values that don't match any case
+
+Dart also supports case statements with multiple conditions using the `when` clause (in Dart 3.0+):
+
+```dart
+void main() {
+  var score = 85;
+  
+  switch (score) {
+    case var s when s >= 90:
+      print('A grade');
+      break;
+    case var s when s >= 80:
+      print('B grade');
+      break;
+    case var s when s >= 70:
+      print('C grade');
+      break;
+    default:
+      print('Failed');
+  }
+}
+```
+
+## Loops
+
+### For Loops
+
+Dart supports several forms of for loops:
+
+#### Standard For Loop
+
+```dart
+void main() {
+  for (var i = 0; i < 5; i++) {
+    print('Count: $i');
+  }
+}
+```
+
+#### For-In Loop (similar to Python's for loop)
+
+```dart
+void main() {
+  var fruits = ['apple', 'banana', 'orange'];
+  
+  for (var fruit in fruits) {
+    print('I like $fruit');
+  }
+}
+```
+
+#### For-Each Method
+
+```dart
+void main() {
+  var numbers = [1, 2, 3, 4, 5];
+  
+  numbers.forEach((number) {
+    print('Number: $number');
+  });
+  
+  // Using arrow function
+  numbers.forEach((number) => print('Number: $number'));
+}
+```
+
+### While and Do-While Loops
+
+#### While Loop
+
+Executes a block of code as long as a condition is true:
+
+```dart
+void main() {
+  var counter = 0;
+  
+  while (counter < 5) {
+    print('Counter: $counter');
+    counter++;
+  }
+}
+```
+
+#### Do-While Loop
+
+Similar to while loop, but guarantees the block is executed at least once:
+
+```dart
+void main() {
+  var counter = 0;
+  
+  do {
+    print('Counter: $counter');
+    counter++;
+  } while (counter < 5);
+}
+```
+
+## Control Flow Modifiers
+
+### Break and Continue
+
+- `break`: Exits the innermost loop or switch statement
+- `continue`: Skips to the next iteration of the loop
+
+```dart
+void main() {
+  for (var i = 0; i < 10; i++) {
+    if (i == 5) {
+      continue; // Skip printing 5
+    }
+    
+    if (i == 8) {
+      break; // Exit the loop when i is 8
+    }
+    
+    print('Number: $i');
+  }
+}
+```
+
+### Assert
+
+The `assert` statement is used during development to verify conditions:
+
+```dart
+void main() {
+  var age = -5;
+  
+  // This will throw an exception if the condition is false (in debug mode)
+  assert(age >= 0, 'Age cannot be negative');
+  
+  print('Age: $age');
+}
+```
+
+Assert statements are only enabled in development mode and are ignored in production.
+
+## Exception Handling
+
+Dart uses try-catch-finally blocks for exception handling:
+
+```dart
+void main() {
+  try {
+    var result = 10 ~/ 0; // Integer division by zero
+    print('Result: $result'); // This line won't execute
+  } on IntegerDivisionByZeroException {
+    print('Cannot divide by zero!');
+  } catch (e) {
+    print('Error: $e');
+  } finally {
+    print('This always executes');
+  }
+}
+```
+
+Key points:
+- `try`: Contains code that might cause an exception
+- `on`: Catches specific types of exceptions
+- `catch`: Catches any exception
+- `finally`: Contains code that always executes, whether an exception occurred or not
+
+You can also throw exceptions:
+
+```dart
+void checkAge(int age) {
+  if (age < 0) {
+    throw ArgumentError('Age cannot be negative');
+  }
+}
+
+void main() {
+  try {
+    checkAge(-5);
+  } catch (e) {
+    print('Error: $e');
+  }
+}
+```
+
+## Control Flow in Flutter Context
+
+Let's see how control flow statements are used in a Flutter application:
+
+```dart
+class WeatherApp extends StatefulWidget {
+  @override
+  _WeatherAppState createState() => _WeatherAppState();
+}
+
+class _WeatherAppState extends State<WeatherApp> {
+  String _weatherCondition = 'Sunny';
+  int _temperature = 28;
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Weather App')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Using if-else to determine the icon
+            Icon(
+              _weatherCondition == 'Sunny' ? Icons.wb_sunny : 
+              _weatherCondition == 'Cloudy' ? Icons.cloud :
+              Icons.question_mark,
+              size: 80,
+              color: Colors.orange,
+            ),
+            
+            // Using string interpolation with conditional logic
+            Text(
+              'It\'s $_temperature°C and $_weatherCondition',
+              style: TextStyle(fontSize: 24),
+            ),
+            
+            // Using a loop to generate multiple widgets
+            Container(
+              margin: EdgeInsets.only(top: 20),
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: EdgeInsets.all(8),
+                    child: Container(
+                      width: 80,
+                      alignment: Alignment.center,
+                      child: Text('Day ${index + 1}'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            // Using switch to update weather
+            switch (_weatherCondition) {
+              case 'Sunny':
+                _weatherCondition = 'Cloudy';
+                _temperature -= 5;
+                break;
+              case 'Cloudy':
+                _weatherCondition = 'Rainy';
+                _temperature -= 3;
+                break;
+              default:
+                _weatherCondition = 'Sunny';
+                _temperature = 28;
+            }
+          });
+        },
+        child: Icon(Icons.refresh),
+      ),
+    );
+  }
+}
+```
+
+In this Flutter example, we've used:
+- Conditional (ternary) expressions to determine which icon to show
+- String interpolation with conditionals
+- A `ListView.builder` that uses a loop internally to create multiple widgets
+- A switch statement inside the button's onPressed callback
+
+## Comparing with Python
+
+Let's compare Dart's control flow with Python:
+
+### If-Else
+
+```python
+# Python
+temperature = 25
+
+if temperature > 30:
+    print("It's hot outside!")
+elif temperature > 20:
+    print("It's a nice day!")
+else:
+    print("It's a bit cold!")
+```
+
+```dart
+// Dart
+var temperature = 25;
+
+if (temperature > 30) {
+  print('It\'s hot outside!');
+} else if (temperature > 20) {
+  print('It\'s a nice day!');
+} else {
+  print('It\'s a bit cold!');
+}
+```
+
+### Loops
+
+```python
+# Python for loop
+fruits = ['apple', 'banana', 'orange']
+for fruit in fruits:
+    print(f"I like {fruit}")
+
+# Python while loop
+counter = 0
+while counter < 5:
+    print(f"Counter: {counter}")
+    counter += 1
+```
+
+```dart
+// Dart for-in loop
+var fruits = ['apple', 'banana', 'orange'];
+for (var fruit in fruits) {
+  print('I like $fruit');
+}
+
+// Dart while loop
+var counter = 0;
+while (counter < 5) {
+  print('Counter: $counter');
+  counter++;
+}
+```
+
+### Exception Handling
+
+```python
+# Python
+try:
+    result = 10 // 0  # Integer division by zero
+    print(f"Result: {result}")
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except Exception as e:
+    print(f"Error: {e}")
+finally:
+    print("This always executes")
+```
+
+```dart
+// Dart
+try {
+  var result = 10 ~/ 0;  // Integer division by zero
+  print('Result: $result');
+} on IntegerDivisionByZeroException {
+  print('Cannot divide by zero!');
+} catch (e) {
+  print('Error: $e');
+} finally {
+  print('This always executes');
+}
+```
+
+## Practical Exercise
+
+Let's create a simple Dart program that demonstrates various control flow statements:
+
+```dart
+void main() {
+  // List of students with their scores
+  var students = [
+    {'name': 'Alice', 'score': 95},
+    {'name': 'Bob', 'score': 85},
+    {'name': 'Charlie', 'score': 72},
+    {'name': 'David', 'score': 63},
+    {'name': 'Eve', 'score': 88},
+  ];
+  
+  print('Student Grades:');
+  print('---------------');
+  
+  // Using a for-in loop to iterate through students
+  for (var student in students) {
+    var name = student['name'];
+    var score = student['score'] as int;
+    String grade;
+    
+    // Using if-else to determine the grade
+    if (score >= 90) {
+      grade = 'A';
+    } else if (score >= 80) {
+      grade = 'B';
+    } else if (score >= 70) {
+      grade = 'C';
+    } else if (score >= 60) {
+      grade = 'D';
+    } else {
+      grade = 'F';
+    }
+    
+    // Using string interpolation
+    print('$name: $score - Grade: $grade');
+  }
+  
+  print('\nStatistics:');
+  print('---------------');
+  
+  // Using a forEach with an arrow function
+  var total = 0;
+  students.forEach((student) => total += student['score'] as int);
+  
+  // Using null-aware operator
+  var average = students.isEmpty ? 0 : total / students.length;
+  print('Average score: ${average.toStringAsFixed(1)}');
+  
+  // Using while loop to find highest scorer
+  var i = 0;
+  var highestScore = 0;
+  var highestScorer = '';
+  
+  while (i < students.length) {
+    var score = students[i]['score'] as int;
+    if (score > highestScore) {
+      highestScore = score;
+      highestScorer = students[i]['name'] as String;
+    }
+    i++;
+  }
+  
+  print('Highest score: $highestScore by $highestScorer');
+  
+  // Using try-catch for error handling
+  try {
+    var result = total ~/ (students.length - students.length); // Division by zero
+    print('This won\'t print: $result');
+  } on IntegerDivisionByZeroException {
+    print('Cannot calculate average of an empty list');
+  } catch (e) {
+    print('An error occurred: $e');
+  }
+}
+```
+
+This program demonstrates:
+- For-in loops
+- If-else statements
+- String interpolation
+- forEach with arrow functions
+- Null-aware operators
+- While loops
+- Try-catch exception handling
