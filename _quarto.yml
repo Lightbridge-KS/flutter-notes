@@ -12,6 +12,7 @@ book:
     - part: Dart Basic
       chapters: 
         - "content/dart-basic/dart-variable.qmd"
+        - "content/dart-basic/dart-types.qmd"
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-fn.qmd"
     - part: Flutter Basic
