@@ -1,0 +1,45 @@
+# Flutter Project Structure
+
+## Flutter Project Directory Structure
+
+Let's create a first Flutter app. 
+
+I've run the command: `flutter create namer_app`
+
+Here is the directory structure, please explain the purpose of each file/folder:
+
+```zsh
+(base) ➜  namer_app tree -L 1
+.
+├── README.md
+├── analysis_options.yaml
+├── android
+├── ios
+├── lib
+├── linux
+├── macos
+├── namer_app.iml
+├── pubspec.lock
+├── pubspec.yaml
+├── test
+├── web
+└── windows
+```
+
+- **`README.md`**: Documentation file for your project.
+
+- **`analysis_options.yaml`**: Configures Dart analyzer for code quality.
+
+- **Platform-specific folders**:
+  - `android/`, `ios/`: Mobile platform configurations
+  - `linux/`, `macos/`, `windows/`: Desktop platform configurations
+  - `web/`: Web platform configuration
+
+- **Core project files**:
+  - `lib/`: Contains your Dart code - this is where you'll spend most time
+  - `pubspec.yaml`: Defines project metadata and dependencies
+  - `pubspec.lock`: Auto-generated file that locks dependency versions
+
+- **`test/`**: Contains automated tests for your application
+
+For a beginner, focus on exploring the `lib/main.dart` file (your app's entry point) and understanding the `pubspec.yaml` file for dependency management before building simple widgets in the `lib` directory.
