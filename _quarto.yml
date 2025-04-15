@@ -15,6 +15,9 @@ book:
         - "content/dart-basic/dart-types.qmd"
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-fn.qmd"
+    - part: Dart Misc
+      chapters: 
+        - "content/dart-misc/dart-as-cast.md"
     - part: Flutter Basic
       chapters: 
         - "content/flutter-basic/flutter-01-intro.qmd"

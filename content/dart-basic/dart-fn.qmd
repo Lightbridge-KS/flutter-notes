@@ -1,4 +1,4 @@
-# Functions in Dart
+# Functions
 
 Functions are essential building blocks in Dart, just like in other programming languages. Given your experience with Python, you'll find many similarities but also some important differences in how Dart handles functions. Let's explore the fundamentals of Dart functions.
 

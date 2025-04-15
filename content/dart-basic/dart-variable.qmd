@@ -1,4 +1,4 @@
-# Variables in Dart
+# Variables
 
 Variables are one of the fundamental building blocks in any programming language. In Dart, variables have some unique characteristics that combine elements you might recognize from both Python and statically-typed languages like Java. Let's explore Dart variables thoroughly.
 
