@@ -1,0 +1,167 @@
+# Organizing Dart Packages
+
+::: {.callout-note appearance="minimal" collapse="false"}
+**Organizing Dart Packages: Structure, Imports, and Exports**
+:::
+
+Based on the official Dart documentation, here's a comprehensive guide to organizing a Dart package with recommended file structure, import, and export practices.
+
+## Recommended Package Structure
+
+The standard package structure in Dart follows these conventions:
+
+### Basic Structure
+
+```
+my_package/
+├── pubspec.yaml      # Package metadata and dependencies
+├── lib/              # Public code, available to other packages
+│   ├── my_package.dart  # Main library file
+│   └── src/          # Private implementation code
+│       ├── feature1.dart
+│       └── feature2.dart
+├── test/            # Test files
+├── example/         # Example code
+├── bin/             # Executable tools for public use
+└── tool/            # Development tools (not for public use)
+```
+
+### Key Directories
+
+1. **lib/** - Contains all the public code for your package
+   - **lib/my_package.dart** - Main library file that exports the public API
+   - **lib/src/** - Implementation details that are not directly exposed
+
+2. **test/** - Contains all test code for your package
+
+3. **example/** - Contains example code showing how to use your package
+
+4. **bin/** - Contains executable command-line tools for users
+
+5. **tool/** - Contains internal development tools (not for users)
+
+## Library Organization Best Practices
+
+### 1. Mini Libraries Approach
+
+The Dart ecosystem encourages creating "mini libraries" - small, focused libraries where:
+
+- Each class is often in its own file
+- Related functionality is grouped together
+- Code is easy to maintain, extend, and test
+
+### 2. Public API Management
+
+To control your package's public API:
+
+1. Place implementation code in **lib/src/**
+2. Create a "main" library file directly under **lib/** (typically named after your package)
+3. Export only the specific API elements you want to make public
+
+For example, in the main library file `lib/my_package.dart`:
+
+```dart
+// Export specific symbols from implementation files
+export 'src/feature1.dart' show Class1, function1;
+export 'src/feature2.dart' show Class2;
+```
+
+This pattern:
+
+- Gives users a single import to access all functionality
+- Prevents exposing implementation details
+- Provides an overview of the package's entire public API
+
+## Import and Export Conventions
+
+### Import Rules
+
+Follow these rules when importing libraries:
+
+1. **External package imports:**
+   
+   ```dart
+   import 'package:other_package/other_package.dart';
+   ```
+
+2. **Within your own package:**
+   
+   - When both files are inside `lib/`, use relative paths:
+     ```dart
+     // From lib/bar/b.dart importing lib/foo/a.dart
+     import '../foo/a.dart';
+     ```
+   - When importing a file in `lib/` from outside `lib/` (like from `test/` or `bin/`), use package imports:
+     ```dart
+     // From web/main.dart importing lib/foo/a.dart
+     import 'package:my_package/foo/a.dart';
+     ```
+
+### Conditional Imports/Exports
+
+For multi-platform support, use conditional imports/exports:
+
+```dart
+export 'src/default_implementation.dart' // Default implementation
+    if (dart.library.io) 'src/io_implementation.dart' // Native implementation
+    if (dart.library.js_interop) 'src/web_implementation.dart'; // Web implementation
+```
+
+This allows:
+
+- Different implementations for different platforms
+- The appropriate implementation to be automatically selected
+- Maintaining the same API across all platforms
+
+## Documentation
+
+Document your library with the `///` documentation comments syntax:
+
+```dart
+/// The event handler responsible for updating the badge in the UI.
+void updateBadge() {
+  // ...
+}
+```
+
+For library-level documentation, add a comment above a `library` directive:
+
+```dart
+/// A library that provides utilities for working with dates.
+///
+/// This library contains functions for parsing, formatting,
+/// and manipulating dates.
+library date_utils;
+```
+
+## Publishing Considerations
+
+When preparing to publish your package:
+
+- Include README.md with usage instructions
+- Add CHANGELOG.md to track version changes
+- Run `dart doc` to check that documentation generates correctly
+- Use `dart pub publish` to publish to pub.dev
+
+## Real-World Example: The Shelf Package
+
+The `shelf` package demonstrates these principles:
+
+1. Main library file (`lib/shelf.dart`) exports specific symbols:
+   ```dart
+   export 'src/cascade.dart' show Cascade;
+   export 'src/handler.dart' show Handler;
+   // Additional exports...
+   ```
+
+2. Implementation details are in `lib/src/`
+
+3. Additional specialized libraries (like `shelf_io.dart`) are provided for specific functionality
+
+This organization ensures:
+
+- Clear separation between public API and implementation
+- Easy discovery of functionality for users
+- Well-defined boundaries that make the package easier to maintain
+
+By following these patterns, you'll create Dart packages that are well-organized, maintainable, and user-friendly, making them valuable contributions to the Dart ecosystem.

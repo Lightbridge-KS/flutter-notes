@@ -16,6 +16,7 @@ book:
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-fn.qmd"
         - "content/dart-basic/dart-lib-import.qmd"
+        - "content/dart-basic/dart-pkg-org.qmd"
     - part: Dart Misc
       chapters: 
         - "content/dart-misc/dart-as-cast.md"
