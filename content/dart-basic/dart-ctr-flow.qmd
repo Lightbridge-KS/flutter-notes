@@ -23,6 +23,7 @@ void main() {
 ```
 
 Notice that unlike Python:
+
 - Dart uses curly braces `{}` to define code blocks
 - Conditions must be enclosed in parentheses `()`
 - No colon `:` is needed after the condition
@@ -86,6 +87,7 @@ void main() {
 ```
 
 Important points:
+
 - Each case must end with a `break`, `continue`, `return`, or `throw`
 - If you want to fall through to the next case, use `continue` with a label
 - The `default` case handles values that don't match any case
@@ -247,6 +249,7 @@ void main() {
 ```
 
 Key points:
+
 - `try`: Contains code that might cause an exception
 - `on`: Catches specific types of exceptions
 - `catch`: Catches any exception
@@ -356,6 +359,7 @@ class _WeatherAppState extends State<WeatherApp> {
 ```
 
 In this Flutter example, we've used:
+
 - Conditional (ternary) expressions to determine which icon to show
 - String interpolation with conditionals
 - A `ListView.builder` that uses a loop internally to create multiple widgets
@@ -532,6 +536,7 @@ void main() {
 ```
 
 This program demonstrates:
+
 - For-in loops
 - If-else statements
 - String interpolation
