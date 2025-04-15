@@ -13,6 +13,7 @@ book:
       chapters: 
         - "content/dart-basic/dart-variable.qmd"
         - "content/dart-basic/dart-types.qmd"
+        - "content/dart-basic/dart-types-generic.qmd"
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-fn.qmd"
         - "content/dart-basic/dart-oop.qmd"
@@ -25,9 +26,9 @@ book:
       chapters: 
         - "content/flutter-basic/flutter-01-intro.qmd"
         - "content/flutter-basic/flutter-02-structure.qmd"
-    - part: "Ex: Namer App"
-      chapters: 
-        - "content/flutter-ex/flutter-namer-main.qmd"
+    # - part: "Example"
+    #   chapters: 
+    #     - "content/some_example.qmd"
 
 
 bibliography: references.bib
