@@ -1,0 +1,55 @@
+# Widgets
+
+
+## Type of Widgets
+
+
+```dart
+ // widgets/framework.dart
+
+ abstract class Widget {}
+
+ abstract class StatelessWidget extends Widget {}
+
+ abstract class StatefulWidget extends Widget {}
+
+ abstract class RenderObjectWidget extends Widget {}
+
+ abstract class InheritedWidget extends Widget {}
+```
+
+## `StatelessWidget`
+
+**Syntax:**
+
+```dart
+class MyWidget extends StatelessWidget {
+    MyWidget(/* parameters */);
+
+    Widget build(BuildContext context) {
+        return ChildWidget();
+    }
+}
+```
+
+## `StatefulWidget`
+
+**Syntax:**
+
+```dart
+class MyWidget extends StatefulWidget {
+    MyWidget({this.color});
+
+    final Color color;
+
+    State<MyWidget> createState() =>
+        _MyWidgetState();
+}
+
+class _MyWidgetState extends State<MyWidget> {
+
+    Widget build(BuildContext context) =>
+        ColoredBox(color: widget.color);
+}
+
+```
