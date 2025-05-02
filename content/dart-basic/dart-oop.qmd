@@ -369,6 +369,112 @@ class GreetingWidget extends StatelessWidget {
 }
 ```
 
+## `super` keyword
+
+**Understanding the `super` Keyword in Dart:**
+
+In Dart, the `super` keyword is a powerful feature of object-oriented programming that allows a child class to interact with its parent class. Let me explain how it works and provide some context based on your programming background.
+
+**Basic Concept**
+
+The `super` keyword in Dart serves as a reference to the parent class. It allows a subclass to access the members (methods and properties) of its superclass, similar to how you might use inheritance in Python, JavaScript, or R.
+
+### When to Use `super`
+
+There are several key scenarios where you'll use the `super` keyword:
+
+1. Calling the parent constructor
+2. Accessing overridden methods
+3. Accessing parent class properties
+4. Using named constructors from the parent
+
+### Comparing to Languages You Know
+
+Since you have experience with Python and JavaScript, here's how `super` in Dart compares:
+
+- In Python: Similar to `super()` calls, but with different syntax
+- In JavaScript: Similar to `super` in ES6 classes
+
+### Examples and Usage Patterns
+
+#### Calling the Parent Constructor
+
+```dart
+class Parent {
+  String name;
+  
+  Parent(this.name);
+}
+
+class Child extends Parent {
+  int age;
+  
+  // Using super to call parent constructor
+  Child(String name, this.age) : super(name);
+}
+```
+
+#### Accessing Overridden Methods
+
+```dart
+class Animal {
+  void makeSound() {
+    print('Some generic sound');
+  }
+}
+
+class Dog extends Animal {
+  @override
+  void makeSound() {
+    // Call the parent implementation first
+    super.makeSound();
+    // Then do Dog-specific behavior
+    print('Woof!');
+  }
+}
+```
+
+#### Accessing Parent Class Properties
+
+```dart
+class Vehicle {
+  int speed = 0;
+  
+  void accelerate() {
+    speed += 10;
+  }
+}
+
+class SportsCar extends Vehicle {
+  @override
+  void accelerate() {
+    // Access and modify parent property
+    super.speed += 5; 
+    // Call parent method
+    super.accelerate();
+  }
+}
+```
+
+### Advanced Usage
+
+Dart allows for named constructors, and you can use `super` with them too:
+
+```dart
+class Parent {
+  Parent.named(String value) {
+    print('Parent named constructor with $value');
+  }
+}
+
+class Child extends Parent {
+  Child.named(String value) : super.named(value) {
+    print('Child named constructor');
+  }
+}
+```
+
+
 ## Practice Exercise
 
 To solidify your understanding, try creating a simple medical records system in Dart with the following classes:
