@@ -40,6 +40,32 @@ void main() {
 }
 ```
 
+## Common Use Cases for Generics
+
+
+```dart
+// Explicit generic type - what you showed in your example
+children: <Widget>[
+  Center(child: Text("It's cloudy here")),
+  Center(child: Text("It's rainy here")),
+  Center(child: Text("It's sunny here")),
+],
+
+// Implicit type inference - Dart figures out it's a List<Widget>
+children: [
+  Center(child: Text("It's cloudy here")),
+  Center(child: Text("It's rainy here")),
+  Center(child: Text("It's sunny here")),
+],
+
+// Fully explicit with the List constructor 
+children: List<Widget>.from([
+  Center(child: Text("It's cloudy here")),
+  Center(child: Text("It's rainy here")),
+  Center(child: Text("It's sunny here")),
+]),
+```
+
 ## Multiple Type Parameters
 
 You can use multiple type parameters, just like in TypeScript:
