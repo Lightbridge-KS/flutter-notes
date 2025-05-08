@@ -1,6 +1,148 @@
 # OOP in Dart
 
-As someone coming from Python, JavaScript, and R backgrounds, you'll find Dart's approach to Object-Oriented Programming (OOP) both familiar and refreshingly structured. Let me introduce you to how OOP works in Dart, with examples that will connect to your existing programming knowledge.
+## Overview Dart vs Python Classes
+
+**Creation:** 
+
+::: {.panel-tabset}
+#### Dart
+
+```dart
+class Student {
+  // Instance properties (belong to each object)
+  String name;
+  int age;
+  double gpa;
+  
+  // Static (class) property (shared across all instances)
+  static String school = "Medical University";
+  static int studentCount = 0;
+  
+  // Constructor
+  Student(this.name, this.age, this.gpa) {
+    // Increment the student count when a new instance is created
+    Student.studentCount++;
+  }
+  
+  // Instance method (operates on instance data)
+  String getDetails() {
+    return "Name: $name, Age: $age, GPA: $gpa";
+  }
+  
+  // Instance method
+  bool isHonorStudent() {
+    return gpa >= 3.5;
+  }
+  
+  // Static (class) method (doesn't need an instance to be called)
+  static String getSchoolMotto() {
+    return "Learning for a healthier tomorrow";
+  }
+  
+  // Static method that uses the class property
+  static int getTotalStudents() {
+    return studentCount;
+  }
+}
+```
+
+
+#### Python
+
+```python
+class Student:
+    # Class properties (shared across all instances)
+    school = "Medical University"
+    student_count = 0
+    
+    # Constructor
+    def __init__(self, name, age, gpa):
+        # Instance properties (belong to each object)
+        self.name = name
+        self.age = age
+        self.gpa = gpa
+        
+        # Increment the student count when a new instance is created
+        Student.student_count += 1
+    
+    # Instance method (operates on instance data)
+    def get_details(self):
+        return f"Name: {self.name}, Age: {self.age}, GPA: {self.gpa}"
+    
+    # Instance method
+    def is_honor_student(self):
+        return self.gpa >= 3.5
+    
+    # Class method (doesn't need an instance to be called)
+    @classmethod
+    def get_school_motto(cls):
+        return "Learning for a healthier tomorrow"
+    
+    # Class method that uses the class property
+    @classmethod
+    def get_total_students(cls):
+        return cls.student_count
+```
+
+
+:::
+
+**Usage:** 
+
+
+::: {.panel-tabset}
+#### Dart
+
+```dart
+void main() {
+  // Accessing class property and method before creating any instances
+  print("School: ${Student.school}");
+  print("Motto: ${Student.getSchoolMotto()}");
+  
+  // Creating instances
+  var student1 = Student("John", 22, 3.7);
+  var student2 = Student("Sarah", 24, 3.9);
+  
+  // Accessing instance properties and methods
+  print(student1.getDetails());
+  print("Is honor student: ${student1.isHonorStudent()}");
+  
+  print(student2.getDetails());
+  print("Is honor student: ${student2.isHonorStudent()}");
+  
+  // Accessing class method that uses class property
+  print("Total students: ${Student.getTotalStudents()}");
+}
+```
+
+#### Python
+
+```python
+
+# Main execution
+if __name__ == "__main__":
+    # Accessing class property and method before creating any instances
+    print(f"School: {Student.school}")
+    print(f"Motto: {Student.get_school_motto()}")
+    
+    # Creating instances
+    student1 = Student("John", 22, 3.7)
+    student2 = Student("Sarah", 24, 3.9)
+    
+    # Accessing instance properties and methods
+    print(student1.get_details())
+    print(f"Is honor student: {student1.is_honor_student()}")
+    
+    print(student2.get_details())
+    print(f"Is honor student: {student2.is_honor_student()}")
+    
+    # Accessing class method that uses class property
+    print(f"Total students: {Student.get_total_students()}")
+```
+:::
+
+
+
 
 ## Classes and Objects in Dart
 
