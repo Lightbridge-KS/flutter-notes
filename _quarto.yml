@@ -20,6 +20,7 @@ book:
         - "content/dart-basic/dart-oop.qmd"
         - "content/dart-basic/dart-lib-import.qmd"
         - "content/dart-basic/dart-pkg-org.qmd"
+        - "content/dart-basic/dart-pkg-app.qmd"
     - part: Dart Misc
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"

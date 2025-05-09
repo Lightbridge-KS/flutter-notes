@@ -1,0 +1,248 @@
+# Structuring a Flutter App with Custom Widgets
+
+I'll show you how to organize a Flutter app where you have two custom widgets that can be easily imported. This structure follows best practices for package organization while making your widgets readily accessible in the main application.
+
+## Recommended Project Structure
+
+Here's how you could structure your Flutter application:
+
+```
+lib/
+├── main.dart                  # Application entry point
+├── widgets/                   # Container for all custom widgets
+│   ├── fancy_button/          # First widget package
+│   │   ├── fancy_button.dart  # Main entry point for this widget
+│   │   ├── src/               # Implementation details
+│   │   │   ├── button_style.dart
+│   │   │   ├── button_animation.dart
+│   │   │   └── button_state.dart
+│   ├── data_card/             # Second widget package
+│   │   ├── data_card.dart     # Main entry point for this widget
+│   │   ├── src/               # Implementation details
+│   │   │   ├── card_layout.dart
+│   │   │   ├── card_theme.dart
+│   │   │   └── card_data.dart
+├── screens/                   # Application screens
+├── models/                    # Data models
+└── services/                  # Business logic and services
+```
+
+## Implementation Example
+
+Let's walk through how this would work in practice:
+
+### Widget Entry Points
+
+First, let's create the main entry point file for each widget that exports all the necessary components:
+
+**lib/widgets/fancy_button/fancy_button.dart**:
+```dart
+library fancy_button;
+
+// Export only the public API
+export 'src/button_style.dart' show ButtonStyle, StyleType;
+export 'src/button_animation.dart' show AnimationType;
+
+// The main widget class can be defined here or imported from src
+import 'src/button_state.dart';
+
+class FancyButton extends StatefulWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final ButtonStyle style;
+  final AnimationType animationType;
+
+  const FancyButton({
+    Key? key,
+    required this.text,
+    required this.onPressed,
+    this.style = const ButtonStyle(),
+    this.animationType = AnimationType.fade,
+  }) : super(key: key);
+
+  @override
+  State<FancyButton> createState() => _FancyButtonState();
+}
+
+// You could define the state here directly or use the imported one
+class _FancyButtonState extends FancyButtonState {
+  // Implementation from the imported class
+}
+```
+
+**lib/widgets/data_card/data_card.dart**:
+```dart
+library data_card;
+
+// Export only what should be part of the public API
+export 'src/card_theme.dart' show CardTheme, ThemeVariant;
+export 'src/card_data.dart' show CardData;
+
+import 'package:flutter/material.dart';
+import 'src/card_layout.dart';
+
+class DataCard extends StatelessWidget {
+  final CardData data;
+  final CardTheme theme;
+  final bool expanded;
+
+  const DataCard({
+    Key? key,
+    required this.data,
+    this.theme = const CardTheme(),
+    this.expanded = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Use the implementation from card_layout.dart
+    return CardLayout(data: data, theme: theme, expanded: expanded);
+  }
+}
+```
+
+### Implementation Files
+
+Now, let's see an example of the implementation files in the `src` directory:
+
+**lib/widgets/fancy_button/src/button_style.dart**:
+```dart
+import 'package:flutter/material.dart';
+
+enum StyleType { primary, secondary, outline }
+
+class ButtonStyle {
+  final Color backgroundColor;
+  final Color textColor;
+  final double borderRadius;
+  final StyleType type;
+
+  const ButtonStyle({
+    this.backgroundColor = Colors.blue,
+    this.textColor = Colors.white,
+    this.borderRadius = 8.0,
+    this.type = StyleType.primary,
+  });
+  
+  // Factory constructors for predefined styles
+  factory ButtonStyle.primary() => const ButtonStyle();
+  
+  factory ButtonStyle.secondary() => const ButtonStyle(
+    backgroundColor: Colors.grey,
+    type: StyleType.secondary,
+  );
+  
+  // More implementation details...
+}
+```
+
+**lib/widgets/data_card/src/card_data.dart**:
+```dart
+class CardData {
+  final String title;
+  final String description;
+  final String? imageUrl;
+  final Map<String, dynamic> extraData;
+
+  const CardData({
+    required this.title,
+    required this.description,
+    this.imageUrl,
+    this.extraData = const {},
+  });
+  
+  // Helper methods, factory constructors, etc.
+}
+```
+
+### Main Application
+
+Now your `main.dart` can import these widgets with a single import statement for each:
+
+**lib/main.dart**:
+```dart
+import 'package:flutter/material.dart';
+// Import custom widgets with single import statements
+import 'widgets/fancy_button/fancy_button.dart';
+import 'widgets/data_card/data_card.dart';
+
+// Import other application components
+import 'screens/home_screen.dart';
+import 'services/api_service.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Flutter App'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Using the first custom widget
+            FancyButton(
+              text: 'Click Me',
+              onPressed: () {
+                print('Button pressed!');
+              },
+              style: ButtonStyle.primary(),
+              animationType: AnimationType.fade,
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Using the second custom widget
+            DataCard(
+              data: CardData(
+                title: 'Important Information',
+                description: 'This is a custom data card widget',
+                imageUrl: 'https://example.com/image.jpg',
+              ),
+              theme: CardTheme.dark(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Key Principles in This Structure
+
+1. **Single Entry Point**: Each widget has a single file that users import, which then provides access to all components needed.
+
+2. **Implementation Hiding**: The `src` directory contains implementation details that aren't directly exposed to users.
+
+3. **Controlled Exports**: The main widget file carefully controls what parts of the implementation are available to users through explicit exports.
+
+4. **Clean Import Experience**: In the main application, developers only need one import per widget to access all functionality.
+
+5. **Modular Organization**: Each widget is completely self-contained in its own directory, making it easy to maintain, test, or even extract into a separate package later.
+
+This structure offers a great balance between organization and ease of use. It keeps your main application code clean while providing a solid foundation for your widget development. As your application grows, this approach scales well and maintains good separation of concerns.
+
+If you decide later to publish these widgets as separate packages, this structure already follows the recommended pub.dev package organization, making the transition almost effortless.
