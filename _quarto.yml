@@ -17,6 +17,7 @@ book:
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-loop-collection.qmd"
         - "content/dart-basic/dart-fn.qmd"
+        - "content/dart-basic/dart-enum.qmd"
         - "content/dart-basic/dart-oop.qmd"
         - "content/dart-basic/dart-lib-import.qmd"
         - "content/dart-basic/dart-pkg-org.qmd"

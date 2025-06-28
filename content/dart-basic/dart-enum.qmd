@@ -1,0 +1,236 @@
+# Enum
+
+## What is an Enum?
+
+An enum (short for "enumeration") is a special data type that represents a fixed set of named constants. Think of it as a way to create a custom type that can only have specific, predefined values. This is similar to creating a restricted set of options that make your code more readable and less error-prone.
+
+In Python, you might have used the `Enum` class from the `enum` module. In Dart, enums are built into the language and are even more powerful.
+
+## Basic Enum Syntax
+
+Let's start with a simple example:
+
+```dart
+// Defining a basic enum
+enum WeatherCondition {
+  sunny,
+  cloudy,
+  rainy,
+  snowy
+}
+
+// Using the enum
+void main() {
+  WeatherCondition today = WeatherCondition.sunny;
+  print(today); // Output: WeatherCondition.sunny
+  
+  // You can also use the .name property to get just the value name
+  print(today.name); // Output: sunny
+}
+```
+
+## Why Use Enums?
+
+Enums solve several problems:
+
+1. **Type Safety**: Instead of using strings like "sunny" or "rainy" (which could be misspelled), you use predefined constants
+2. **Code Clarity**: Your code becomes self-documenting
+3. **IDE Support**: Your editor can autocomplete enum values
+4. **Compile-time Checking**: Typos are caught during compilation, not runtime
+
+Compare these two approaches:
+
+```dart
+// Without enum (error-prone)
+String getDiseaseRisk(String condition) {
+  if (condition == 'diabetis') { // Oops! Typo won't be caught
+    return 'High risk';
+  }
+  return 'Normal risk';
+}
+
+// With enum (safer)
+enum MedicalCondition {
+  diabetes,
+  hypertension,
+  normal
+}
+
+String getDiseaseRisk(MedicalCondition condition) {
+  if (condition == MedicalCondition.diabetes) { // Typo would cause compile error
+    return 'High risk';
+  }
+  return 'Normal risk';
+}
+```
+
+## Enhanced Enums (Dart 2.17+)
+
+Modern Dart supports enhanced enums, which can have fields, methods, and constructors. This is where Dart enums become really powerful:
+
+```dart
+enum ImageModality {
+  // Each enum value can have associated data
+  xray('X-Ray', 'XR', 2),
+  ct('CT Scan', 'CT', 3),
+  mri('MRI', 'MR', 4),
+  ultrasound('Ultrasound', 'US', 2);
+  
+  // Enum can have fields
+  final String fullName;
+  final String abbreviation;
+  final int dimensionality;
+  
+  // Enum can have constructors
+  const ImageModality(this.fullName, this.abbreviation, this.dimensionality);
+  
+  // Enum can have methods
+  bool is3D() => dimensionality > 2;
+  
+  // You can even have getters
+  String get description => '$fullName ($abbreviation)';
+}
+
+void main() {
+  var modality = ImageModality.ct;
+  print(modality.fullName);        // Output: CT Scan
+  print(modality.is3D());          // Output: true
+  print(modality.description);     // Output: CT Scan (CT)
+}
+```
+
+## Common Enum Patterns
+
+### 1. Using Enums in Switch Statements
+
+Dart's exhaustiveness checking ensures you handle all cases:
+
+```dart
+enum Priority { low, medium, high, urgent }
+
+String getWaitTime(Priority priority) {
+  switch (priority) {
+    case Priority.low:
+      return '2-3 days';
+    case Priority.medium:
+      return '1 day';
+    case Priority.high:
+      return '4-6 hours';
+    case Priority.urgent:
+      return 'Immediate';
+    // No default needed - Dart knows all cases are covered!
+  }
+}
+```
+
+### 2. Iterating Over Enum Values
+
+```dart
+enum Department {
+  radiology,
+  cardiology,
+  neurology,
+  emergency
+}
+
+void main() {
+  // Get all enum values
+  for (var dept in Department.values) {
+    print(dept.name);
+  }
+  
+  // Find enum by name
+  var dept = Department.values.byName('radiology');
+  print(dept); // Output: Department.radiology
+}
+```
+
+### 3. Enum with Complex Logic
+
+```dart
+enum FindingStatus {
+  normal('No abnormalities detected', 0),
+  benign('Benign findings', 1),
+  suspicious('Requires follow-up', 2),
+  malignant('Urgent review needed', 3);
+  
+  final String message;
+  final int severityLevel;
+  
+  const FindingStatus(this.message, this.severityLevel);
+  
+  bool get requiresAction => severityLevel >= 2;
+  
+  static FindingStatus fromSeverity(int level) {
+    return FindingStatus.values.firstWhere(
+      (status) => status.severityLevel == level,
+      orElse: () => FindingStatus.normal,
+    );
+  }
+}
+```
+
+## When to Use Enums
+
+Enums are perfect for:
+
+1. **Fixed Sets of Options**: Days of the week, months, user roles
+2. **State Management**: Loading states, form validation states
+3. **Configuration Options**: Theme modes, language settings
+4. **Medical/Scientific Classifications**: Disease stages, test results categories
+
+Here's a practical Flutter example:
+
+```dart
+enum ConnectionState {
+  idle,
+  connecting,
+  connected,
+  disconnected,
+  error;
+  
+  bool get isActive => this == connected;
+  
+  Widget toIcon() {
+    switch (this) {
+      case idle:
+        return Icon(Icons.wifi_off, color: Colors.grey);
+      case connecting:
+        return CircularProgressIndicator();
+      case connected:
+        return Icon(Icons.wifi, color: Colors.green);
+      case disconnected:
+        return Icon(Icons.wifi_off, color: Colors.red);
+      case error:
+        return Icon(Icons.error, color: Colors.red);
+    }
+  }
+}
+
+// Usage in a Flutter widget
+class ConnectionIndicator extends StatelessWidget {
+  final ConnectionState state;
+  
+  const ConnectionIndicator({required this.state});
+  
+  @override
+  Widget build(BuildContext context) {
+    return state.toIcon();
+  }
+}
+```
+
+## Practice Exercise
+
+Try creating an enum for a radiology reporting system:
+
+```dart
+// Create an enum called 'BIRADS' (Breast Imaging Reporting and Data System)
+// It should have categories 0-6 with appropriate descriptions and recommendations
+// Include methods for:
+// - whether follow-up is needed
+// - recommended action
+// - risk percentage range
+
+// Your code here...
+```
