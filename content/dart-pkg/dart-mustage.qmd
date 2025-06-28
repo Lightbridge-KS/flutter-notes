@@ -1,0 +1,173 @@
+# `mustache_template`
+
+Let me walk you through the basics of using the `mustache_template` package in Dart. This will be a good introduction to both Dart package management and templating.
+
+## Step 1: Add the package to your project
+
+First, you need to add the mustache_template package to your `pubspec.yaml` file, which is Dart's package management configuration file (similar to package.json in JavaScript or requirements.txt in Python).
+
+```yaml
+dependencies:
+  mustache_template: ^2.0.0  # Check for the latest version
+```
+
+After adding this line, run:
+
+```bash
+dart pub get  # For a Dart project
+# or
+flutter pub get  # For a Flutter project
+```
+
+## Step 2: Basic Usage
+
+Here's a simple example showing how to use mustache_template:
+
+```dart
+import 'package:mustache_template/mustache_template.dart';
+
+void main() {
+  // Create a template
+  var source = 'Hello, {{name}}! You have {{count}} new messages.';
+  var template = Template(source);
+  
+  // Render with data
+  var output = template.renderString({
+    'name': 'Alice',
+    'count': 5
+  });
+  
+  print(output); // Hello, Alice! You have 5 new messages.
+}
+```
+
+## Step 3: Template Features
+
+Mustache has several useful features:
+
+### Sections (Conditionals and Loops)
+
+```dart
+import 'package:mustache_template/mustache_template.dart';
+
+void main() {
+  var template = Template('''
+  {{#hasMessages}}
+    You have messages:
+    {{#messages}}
+      - {{text}} from {{sender}}
+    {{/messages}}
+  {{/hasMessages}}
+  {{^hasMessages}}
+    No new messages.
+  {{/hasMessages}}
+  ''');
+  
+  // With messages
+  var output1 = template.renderString({
+    'hasMessages': true,
+    'messages': [
+      {'text': 'Hello there!', 'sender': 'Bob'},
+      {'text': 'Meeting at 2pm', 'sender': 'Carol'}
+    ]
+  });
+  
+  // Without messages
+  var output2 = template.renderString({
+    'hasMessages': false
+  });
+  
+  print(output1);
+  print('---');
+  print(output2);
+}
+```
+
+### Loading Templates from Files
+
+```dart
+import 'dart:io';
+import 'package:mustache_template/mustache_template.dart';
+
+void main() async {
+  // Load template from file
+  var file = File('templates/email.mustache');
+  var source = await file.readAsString();
+  var template = Template(source);
+  
+  var output = template.renderString({
+    'userName': 'David',
+    'productName': 'Dart Course'
+  });
+  
+  print(output);
+}
+```
+
+### Partials (Template Inclusion)
+
+Let's say you have two template files:
+
+**header.mustache:**
+```
+==== {{title}} ====
+```
+
+**main.mustache:**
+```
+{{> header}}
+Welcome, {{name}}!
+```
+
+You can use them together:
+
+```dart
+import 'dart:io';
+import 'package:mustache_template/mustache_template.dart';
+
+void main() async {
+  // Load templates
+  var headerTemplate = await File('templates/header.mustache').readAsString();
+  var mainTemplate = await File('templates/main.mustache').readAsString();
+  
+  // Create a template with partials
+  var template = Template(
+    mainTemplate,
+    partialResolver: (name) {
+      if (name == 'header') return headerTemplate;
+      return null;
+    },
+  );
+  
+  var output = template.renderString({
+    'title': 'Welcome Page',
+    'name': 'Emma'
+  });
+  
+  print(output);
+}
+```
+
+## Step 4: Complete Example Project
+
+Here's how you might structure a simple project that uses mustache_template:
+
+## Key Points to Remember
+
+1. **Package Management**: Dart uses `pubspec.yaml` for dependencies, similar to how Python uses requirements.txt.
+
+2. **Variable Substitution**: Use `{{variableName}}` in your templates.
+
+3. **Sections**:
+   - `{{#section}}` ... `{{/section}}` for conditionals and loops
+   - `{{^section}}` ... `{{/section}}` for negation (when value is false or empty)
+
+4. **Partials**: Use `{{> partialName}}` to include other templates.
+
+5. **Dot Notation**: Access nested properties with `{{person.name}}`.
+
+6. **List Items**: In loops, use `{{.}}` to refer to the current item.
+
+As you're coming from Python, this might feel similar to Jinja2 but with a simpler syntax. Mustache is designed to be "logic-less," so it has fewer features than Jinja2 - no complex expressions, filters, or macros. If you need more complex templating logic, you might want to use Dart code to prepare your data before passing it to the template.
+
+Would you like me to explain how this would fit into a Flutter application, or would you prefer to explore another aspect of Dart first?

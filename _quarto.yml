@@ -26,6 +26,9 @@ book:
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"
         - "content/dart-misc/dart-as-cast.md"
+    - part: Dart Package
+      chapters: 
+        - "content/dart-pkg/dart-mustage.qmd"
     - part: Flutter Basic
       chapters: 
         - "content/flutter-basic/flutter-01-intro.qmd"
