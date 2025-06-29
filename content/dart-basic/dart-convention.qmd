@@ -1,0 +1,228 @@
+# Conventions Cheatsheet
+
+### File Naming
+
+Dart uses lowercase with underscores for file names, similar to Python:
+
+- `my_widget.dart` ✅
+- `MyWidget.dart` ❌
+- `myWidget.dart` ❌
+
+### Class Naming
+
+Classes use UpperCamelCase (PascalCase), just like in Python and JavaScript:
+
+```dart
+class UserProfile { }      // ✅
+class HTTPResponse { }     // ✅ (acronyms stay uppercase)
+class userProfile { }      // ❌
+class Http_Response { }    // ❌
+```
+
+### Variable and Function Naming
+
+Variables, functions, and parameters use lowerCamelCase:
+
+```dart
+// Variables
+var itemCount = 0;         // ✅
+var item_count = 0;        // ❌ (unlike Python)
+
+// Functions
+void calculateTotal() { }   // ✅
+void calculate_total() { }  // ❌
+
+// Parameters
+void setUser({String firstName, int userId}) { } // ✅
+```
+
+### Constants
+
+Constants use lowerCamelCase (different from Python's UPPER_SNAKE_CASE):
+
+```dart
+const pi = 3.14159;              // ✅
+const defaultTimeout = 5000;     // ✅
+const DEFAULT_TIMEOUT = 5000;    // ❌ (not Dart style)
+```
+
+### Private Members
+
+Dart uses a leading underscore to denote private members (similar to Python's convention):
+
+```dart
+class MyClass {
+  int _privateField;      // Private to the library
+  int publicField;        // Public
+  
+  void _privateMethod() { }  // Private method
+  void publicMethod() { }    // Public method
+}
+```
+
+### Library and Package Naming
+
+Libraries and packages use lowercase with underscores:
+
+```dart
+library my_library;       // ✅
+import 'package:flutter_bloc/flutter_bloc.dart';  // ✅
+```
+
+### Enum Naming
+
+Enums follow the same pattern as classes (UpperCamelCase), with values also in UpperCamelCase:
+
+```dart
+enum Status {
+  pending,    // ✅ (lowercase preferred in Dart 2.15+)
+  approved,
+  rejected
+}
+
+// Or traditionally:
+enum Status {
+  Pending,    // Also acceptable
+  Approved,
+  Rejected
+}
+```
+
+### Type Parameters
+
+Single letter uppercase for simple cases, or descriptive UpperCamelCase:
+
+```dart
+class Box<T> { }                    // ✅ Simple generic
+class Cache<Key, Value> { }         // ✅ Descriptive generics
+Map<String, List<int>> data;        // ✅ Nested generics
+```
+
+### Extensions
+
+Extensions use UpperCamelCase:
+
+```dart
+extension StringExtension on String {  // ✅
+  bool get isEmail => contains('@');
+}
+```
+
+### Mixins
+
+Mixins follow class naming conventions:
+
+```dart
+mixin ValidationMixin { }    // ✅
+mixin validationMixin { }    // ❌
+```
+
+### Annotations
+
+Annotations use lowerCamelCase:
+
+```dart
+@override
+void method() { }
+
+@deprecated
+void oldMethod() { }
+```
+
+### Import Organization
+
+Imports should be organized in specific order:
+
+```dart
+// 1. Dart imports
+import 'dart:async';
+import 'dart:io';
+
+// 2. Package imports
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+
+// 3. Local imports
+import '../models/user.dart';
+import 'widgets/custom_button.dart';
+```
+
+### Formatting Guidelines
+
+Key formatting rules that differ from Python:
+
+```dart
+// Use 2 spaces for indentation (not 4 like Python)
+class Example {
+  void method() {
+    if (condition) {
+      // 2 spaces per level
+    }
+  }
+}
+
+// Opening braces on same line (like JavaScript)
+if (condition) {  // ✅
+  // code
+}
+
+if (condition)    // ❌
+{
+  // code
+}
+
+// Trailing commas for better formatting
+Widget build(BuildContext context) {
+  return Container(
+    padding: EdgeInsets.all(16),
+    child: Text('Hello'),  // Trailing comma helps formatting
+  );
+}
+```
+
+### Documentation Comments
+
+Use triple-slash for documentation (similar to Python's docstrings but different syntax):
+
+```dart
+/// Calculates the area of a circle.
+/// 
+/// Takes [radius] as input and returns the calculated area.
+/// Throws [ArgumentError] if radius is negative.
+double calculateArea(double radius) {
+  if (radius < 0) throw ArgumentError('Radius cannot be negative');
+  return 3.14159 * radius * radius;
+}
+```
+
+### Common Flutter-Specific Conventions
+
+When working with Flutter specifically:
+
+```dart
+// StatelessWidget class names
+class MyHomePage extends StatelessWidget { }  // ✅
+
+// State class naming
+class _MyHomePageState extends State<MyHomePage> { }  // ✅
+
+// Build method always returns Widget
+@override
+Widget build(BuildContext context) {
+  return Container();
+}
+```
+
+### Quick Reference Comparison
+
+Here's how Dart compares to your familiar languages:
+
+| Element | Dart | Python | JavaScript |
+|---------|------|---------|------------|
+| Files | snake_case | snake_case | kebab-case/camelCase |
+| Classes | UpperCamelCase | UpperCamelCase | UpperCamelCase |
+| Functions | lowerCamelCase | snake_case | camelCase |
+| Constants | lowerCamelCase | UPPER_SNAKE | UPPER_SNAKE |
+| Private | _leading | _leading | #private |
+
+Remember to use the Dart formatter (`dart format`) to automatically handle most spacing and line break conventions. In VS Code, you can enable format on save for Dart files to maintain consistent styling automatically.

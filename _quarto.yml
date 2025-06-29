@@ -11,6 +11,7 @@ book:
     - index.qmd
     - part: Dart Basic
       chapters: 
+        - "content/dart-basic/dart-convention.qmd"
         - "content/dart-basic/dart-variable.qmd"
         - "content/dart-basic/dart-types.qmd"
         - "content/dart-basic/dart-types-generic.qmd"
