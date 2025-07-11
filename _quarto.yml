@@ -26,6 +26,9 @@ book:
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-lib-org.qmd"
         - "content/dart-basic/dart-async.qmd"
+    - part: I/O
+      chapters: 
+        - "content/dart-json/dart-json-basic.qmd"
     - part: Dart Advanced 
       chapters: 
         - "content/dart-basic/dart-logging.qmd"
