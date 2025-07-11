@@ -32,6 +32,9 @@ book:
         - "content/dart-json/dart-json-serializable.qmd"
         - "content/dart-http/http-get.qmd"
         - "content/dart-http/http-post.qmd"
+    - part: Config
+      chapters: 
+        - "content/dart-env/dart-env-var.qmd"
     - part: Dart Advanced 
       chapters: 
         - "content/dart-basic/dart-logging.qmd"

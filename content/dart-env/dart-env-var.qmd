@@ -1,0 +1,136 @@
+# Env Var Management
+
+Environment variable management in Dart/Flutter is indeed different from Python, and I'll walk you through the best practices that align with your experience.
+
+## Understanding the Flutter Environment Context
+
+Unlike Python where you can easily load `.env` files at runtime, Flutter apps are compiled and deployed to mobile devices or web browsers. This creates different security and access patterns that we need to handle carefully.
+
+## Recommended Approach: Build-Time Configuration
+
+The most secure and widely adopted approach is to inject environment variables at **build time** rather than runtime. Here's why this works better for mobile apps:
+
+**Security consideration**: Since mobile apps are distributed as compiled packages, any secrets embedded in the app bundle can potentially be extracted by determined attackers. This is fundamentally different from server-side Python applications.
+
+## Step-by-Step Implementation
+
+Let me show you how to set this up, building from concepts you already know:
+
+### 1. Create Environment-Specific Configuration Files
+
+Instead of a single `.env` file, create separate configuration files for each environment:
+
+```dart
+// lib/config/app_config.dart
+class AppConfig {
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.example.com',
+  );
+  
+  static const String apiToken = String.fromEnvironment(
+    'API_TOKEN',
+    defaultValue: '',
+  );
+  
+  static const bool isProduction = bool.fromEnvironment(
+    'IS_PRODUCTION',
+    defaultValue: false,
+  );
+}
+```
+
+### 2. Pass Variables During Build
+
+When building your app, pass the environment variables through the command line:
+
+```bash
+# For development
+flutter run --dart-define=API_BASE_URL=https://dev-api.example.com --dart-define=API_TOKEN=your_dev_token
+
+# For production
+flutter build apk --dart-define=API_BASE_URL=https://api.example.com --dart-define=API_TOKEN=your_prod_token --dart-define=IS_PRODUCTION=true
+```
+
+### 3. Create Build Scripts (Similar to Your Shell Experience)
+
+You can create shell scripts to manage these complex commands, leveraging your zsh knowledge:
+
+```bash
+#!/bin/zsh
+# scripts/build_dev.sh
+
+# Load environment variables from file
+source .env.dev
+
+flutter run \
+  --dart-define=API_BASE_URL=$API_BASE_URL \
+  --dart-define=API_TOKEN=$API_TOKEN \
+  --dart-define=IS_PRODUCTION=false
+```
+
+## Alternative: Runtime Configuration for Non-Sensitive Data
+
+For non-sensitive configuration that might change after deployment, you can still use a runtime approach similar to Python:
+
+```dart
+// lib/config/runtime_config.dart
+import 'dart:io';
+import 'package:flutter/services.dart';
+
+class RuntimeConfig {
+  static Map<String, String> _config = {};
+  
+  static Future<void> loadConfig() async {
+    try {
+      // Load from assets (similar to reading a file in Python)
+      final configString = await rootBundle.loadString('assets/config.json');
+      final configJson = jsonDecode(configString);
+      
+      _config = Map<String, String>.from(configJson);
+    } catch (e) {
+      print('Error loading config: $e');
+    }
+  }
+  
+  static String get(String key, {String defaultValue = ''}) {
+    return _config[key] ?? defaultValue;
+  }
+}
+```
+
+## Connecting to Your Existing Workflow
+
+Since you're comfortable with Git and already use environment variables in Python, here's how to adapt your workflow:
+
+**1. Git Integration**: Add your environment files to `.gitignore` just like in Python:
+```gitignore
+.env
+.env.dev
+.env.prod
+*.env.local
+```
+
+**2. Documentation**: Create a `.env.example` file showing the required variables:
+```bash
+# .env.example
+API_BASE_URL=https://api.example.com
+API_TOKEN=your_token_here
+IS_PRODUCTION=false
+```
+
+**3. CI/CD Integration**: With your AppVeyor experience, you can set environment variables in your build pipeline, similar to how you might do it for Python deployments.
+
+## Security Best Practices
+
+Think of this approach like the difference between server-side Python (where secrets stay on the server) and client-side JavaScript (where everything is potentially visible). For truly sensitive data like API keys, consider:
+
+- Using Flutter's platform channels to access native iOS/Android keychain storage
+- Implementing a backend proxy that handles sensitive API calls
+- Using OAuth flows instead of embedded API tokens
+
+## Questions to Consider
+
+As you implement this, think about: What types of configuration does your app need? Which values are truly secret versus just environment-specific? How will you handle different configurations for development, testing, and production?
+
+Would you like me to elaborate on any of these approaches or help you implement a specific configuration strategy for your project?
