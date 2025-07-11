@@ -1,0 +1,224 @@
+# HTTP: Get
+
+**Source:** [Fetch Data From the Internet](https://docs.flutter.dev/cookbook/networking/fetch-data)
+
+
+## Understanding the HTTP Request Flow
+
+Let's start with the big picture of what happens when you make an HTTP GET request:
+
+```
+Your App → HTTP Request → API Server → JSON Response → Your App
+```
+
+The process involves three main stages: making the request, handling the response, and parsing the data.
+
+## Step 1: Setting Up Dependencies
+
+First, you need to import the necessary packages:
+
+```dart
+import 'dart:async';     // For Future<T> and async operations
+import 'dart:convert';   // For JSON parsing (jsonDecode)
+import 'package:http/http.dart' as http;  // For HTTP requests
+```
+
+The `http` package is Dart's equivalent to Python's `requests` library. The `as http` part creates a namespace, so you call functions like `http.get()` instead of just `get()`.
+
+## Step 2: The Core HTTP Request Function
+
+Here's the heart of the HTTP operation:
+
+```dart
+Future<Album> fetchAlbum() async {
+  final response = await http.get(
+    Uri.parse('https://jsonplaceholder.typicode.com/albums/1'),
+  );
+  
+  if (response.statusCode == 200) {
+    return Album.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
+```
+
+Let me break this down piece by piece:
+
+**Function Signature**: `Future<Album> fetchAlbum() async` means this function returns a `Future` that will eventually contain an `Album` object. Think of `Future<T>` as Dart's version of Python's `asyncio` - it represents a value that will be available later.
+
+**Making the Request**: `http.get(Uri.parse('...'))` creates an HTTP GET request. The `Uri.parse()` converts the string URL into a proper URI object that the HTTP library can use.
+
+**Awaiting the Response**: The `await` keyword pauses execution until the HTTP request completes. This is similar to `await` in Python's asyncio.
+
+**Status Code Check**: Just like in Python's requests library, you check `response.statusCode` to see if the request succeeded (200 means OK).
+
+**JSON Parsing**: `jsonDecode(response.body)` converts the JSON string into a Dart Map, similar to `json.loads()` in Python.
+
+## Step 3: Creating a Data Model
+
+The `Album` class represents the structure of your data:
+
+```dart
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  const Album({required this.userId, required this.id, required this.title});
+
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {'userId': int userId, 'id': int id, 'title': String title} => Album(
+        userId: userId,
+        id: id,
+        title: title,
+      ),
+      _ => throw const FormatException('Failed to load album.'),
+    };
+  }
+}
+```
+
+This is similar to creating a Python dataclass or Pydantic model. The `fromJson` factory constructor uses Dart's pattern matching (the `switch` expression) to extract values from the JSON map and create an `Album` instance.
+
+## Understanding the Async Flow
+
+Here's what happens when you call `fetchAlbum()`:
+
+1. The function starts and immediately hits the `http.get()` call
+2. The HTTP request goes out to the API server
+3. While waiting for the response, the function yields control back to the event loop
+4. When the response arrives, execution resumes
+5. The response is checked and parsed
+6. An `Album` object is returned wrapped in a completed `Future`
+
+## Comparing to Python
+
+If you were to write this in Python, it might look like:
+
+```python
+import asyncio
+import aiohttp
+import json
+
+async def fetch_album():
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://jsonplaceholder.typicode.com/albums/1') as response:
+            if response.status == 200:
+                data = await response.json()
+                return Album(**data)
+            else:
+                raise Exception('Failed to load album')
+```
+
+The concepts are very similar - async functions, awaiting HTTP requests, checking status codes, and parsing JSON.
+
+## Key Concepts to Remember
+
+**Futures and Async**: Dart's `Future<T>` is like Python's `asyncio.Future`. The `async`/`await` pattern works similarly in both languages.
+
+**Error Handling**: The example uses exceptions for error handling, just like Python. You could also use Dart's `Result` pattern or handle errors differently.
+
+**Type Safety**: Unlike Python, Dart requires you to specify types explicitly. The `Map<String, dynamic>` type tells Dart this is a map with string keys and values of any type.
+
+**Immutability**: The `final` keyword makes the Album fields immutable, similar to using `@dataclass(frozen=True)` in Python.
+
+The beauty of this approach is that it separates concerns cleanly - the HTTP logic is in one function, the data modeling is in the class, and the UI (which we're not focusing on) handles the presentation. This makes your code more maintainable and testable, principles that apply across all programming languages.
+
+## Complete App
+
+::: {.callout appearance="simple" collapse="true"}
+### Example
+
+```dart
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+Future<Album> fetchAlbum() async {
+  final response = await http.get(
+    Uri.parse('https://jsonplaceholder.typicode.com/albums/1'),
+  );
+
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    return Album.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load album');
+  }
+}
+
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  const Album({required this.userId, required this.id, required this.title});
+
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {'userId': int userId, 'id': int id, 'title': String title} => Album(
+        userId: userId,
+        id: id,
+        title: title,
+      ),
+      _ => throw const FormatException('Failed to load album.'),
+    };
+  }
+}
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late Future<Album> futureAlbum;
+
+  @override
+  void initState() {
+    super.initState();
+    futureAlbum = fetchAlbum();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fetch Data Example',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Fetch Data Example')),
+        body: Center(
+          child: FutureBuilder<Album>(
+            future: futureAlbum,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(snapshot.data!.title);
+              } else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+
+              // By default, show a loading spinner.
+              return const CircularProgressIndicator();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+}
+```
+:::
