@@ -39,6 +39,7 @@ book:
       chapters: 
         - "content/flutter-basic/flutter-01-intro.qmd"
         - "content/flutter-basic/flutter-02-structure.qmd"
+        - "content/flutter-basic/flutter-lib-structure.qmd"
         - "content/flutter-basic/flutter-03-widgets.qmd"
     - part: Flutter Concept
       chapters: 

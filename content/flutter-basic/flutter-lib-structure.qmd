@@ -1,0 +1,76 @@
+# `lib` Structure
+
+Flutter production structure with inline explanations:
+
+## Recommended Production Structure
+
+```
+lib/
+├── main.dart                           # App entry point - initializes dependency injection and runs app
+├── app/
+│   ├── app.dart                       # Main app widget with MaterialApp configuration
+│   ├── routes/                        # Navigation routing - defines all app routes centrally
+│   └── theme/                         # App-wide styling - colors, fonts, component themes
+├── core/
+│   ├── constants/                     # App constants - API URLs, string literals, magic numbers
+│   ├── errors/                        # Error handling - custom exceptions, error models
+│   ├── utils/                         # Utility functions - date formatters, validators, helpers
+│   └── extensions/                    # Dart extensions - add methods to existing classes
+├── features/                          # Feature-based organization - each major app function
+│   ├── authentication/                # Example: Login, signup, password reset
+│   │   ├── data/                     # External data sources - Firebase Auth, API calls
+│   │   │   ├── datasources/          # Raw data access - REST clients, local storage
+│   │   │   ├── models/               # Data transfer objects - JSON serialization
+│   │   │   └── repositories/         # Data coordination - combines multiple datasources
+│   │   ├── domain/                   # Business logic - pure Dart, no Flutter dependencies
+│   │   │   ├── entities/             # Core business objects - User, Session models
+│   │   │   ├── repositories/         # Abstract contracts - interfaces for data layer
+│   │   │   └── usecases/             # Business rules - LoginUser, ValidateCredentials
+│   │   └── presentation/             # UI components - everything user sees and interacts with
+│   │       ├── pages/                # Full screens - LoginPage, SignupPage
+│   │       ├── widgets/              # Reusable UI components - LoginForm, PasswordField
+│   │       └── providers/            # State management - Riverpod, BLoC, or Provider
+│   ├── dashboard/                    # Example: Main app dashboard
+│   │   ├── data/                     # Patient data APIs, imaging service calls
+│   │   ├── domain/                   # Dashboard business logic, data aggregation rules
+│   │   └── presentation/             # Dashboard UI, charts, summary widgets
+│   └── profile/                      # Example: User profile management
+│       ├── data/                     # User data CRUD operations
+│       ├── domain/                   # Profile validation, update rules
+│       └── presentation/             # Profile forms, avatar widgets
+├── shared/                           # Cross-feature components - used by multiple features
+│   ├── widgets/                      # Common UI elements - buttons, dialogs, loading indicators
+│   ├── services/                     # Global services - network client, local storage, analytics
+│   └── models/                       # Shared data models - Response wrapper, pagination
+└── config/                           # App configuration - environment-specific settings
+    ├── environment/                  # Environment variables - dev, staging, production URLs
+    └── dependency_injection/         # Service locator - registers all app dependencies
+```
+
+## Architecture Flow Explanation
+
+```
+User Interaction
+       ↓
+Presentation Layer (UI)
+       ↓
+Domain Layer (Business Logic)
+       ↓
+Data Layer (External Sources)
+       ↓
+Backend Services (Firebase, APIs)
+```
+
+**Data Flow**: User taps button → Presentation calls UseCase → UseCase calls Repository → Repository calls DataSource → DataSource hits Firebase/API → Response flows back up the chain → UI updates
+
+## Key Benefits for Your Background
+
+**Python Similarity**: The domain layer works like pure Python modules - no framework dependencies, just business logic. You can test these independently, similar to testing Python functions.
+
+**JavaScript Comparison**: The presentation layer manages state like React components, but with Flutter's reactive widget system. State flows down, events flow up.
+
+**Separation of Concerns**: Each layer has one job, making debugging easier. If there's a UI bug, check presentation. If business logic fails, check domain. If data doesn't load, check data layer.
+
+**Testing Strategy**: You can unit test domain logic without UI, integration test data layer without business logic, and widget test presentation without backend calls.
+
+This structure scales well as your app grows and makes it easy to add new features like "medical_imaging" or "patient_reports" following the same three-layer pattern within the features directory.
