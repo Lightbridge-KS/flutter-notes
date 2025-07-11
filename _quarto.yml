@@ -25,6 +25,8 @@ book:
         - "content/dart-basic/dart-pkg-org.qmd"
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-async.qmd"
+    - part: Dart Advanced 
+        - "content/dart-basic/dart-logging.qmd"
     - part: Dart Misc
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"
