@@ -36,6 +36,7 @@ book:
         - "content/dart-basic/dart-logging.qmd"
         - "content/dart-basic/dart-logging-serious.qmd"
         - "content/dart-oop/dart-factory.qmd"
+        - "content/dart-oop/dart-factory-json.qmd"
     - part: Dart Misc
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"

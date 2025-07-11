@@ -1,0 +1,206 @@
+# Factory in JSON parsing
+
+## Question?
+
+For this particular `Album` data model class that transforms JSON into Dart object. Explain why `factory` is used. What are the benefits in this circumstance:
+
+
+```dart
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  const Album({required this.userId, required this.id, required this.title});
+
+  factory Album.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {'userId': int userId, 'id': int id, 'title': String title} => Album(
+        userId: userId,
+        id: id,
+        title: title,
+      ),
+      _ => throw const FormatException('Failed to load album.'),
+    };
+  }
+}
+```
+
+## Why Factory Constructor for JSON Parsing?
+
+In this `Album` class, the factory constructor `Album.fromJson()` serves several crucial purposes that a regular constructor couldn't achieve:
+
+## 1. **Data Validation and Error Handling**
+
+The factory constructor can validate the JSON structure and throw meaningful errors before object creation:
+
+```dart
+// This JSON will throw a clear FormatException
+final badJson = {'userId': 'not-a-number', 'id': 1, 'title': 'Test'};
+
+try {
+  final album = Album.fromJson(badJson);
+} catch (e) {
+  print('Error: $e'); // Error: FormatException: Failed to load album.
+}
+```
+
+With a regular constructor, you'd have to handle this validation inside the constructor body, but constructors should focus on initialization, not complex validation logic.
+
+## 2. **Type Safety with Pattern Matching**
+
+The switch expression ensures type safety at compile time. Notice how it destructures the JSON and validates types simultaneously:
+
+```dart
+// This pattern ensures:
+// - 'userId' exists AND is an int
+// - 'id' exists AND is an int  
+// - 'title' exists AND is a String
+{'userId': int userId, 'id': int id, 'title': String title} => Album(...)
+```
+
+This is much more robust than accessing map keys directly, which could fail at runtime.
+
+## 3. **Separation of Concerns**
+
+The factory constructor separates the concern of "parsing external data" from "creating an object." Your regular constructor remains clean and focused:
+
+```dart
+// Regular constructor: clean, focused on object creation
+const Album({required this.userId, required this.id, required this.title});
+
+// Factory constructor: handles the complexity of external data parsing
+factory Album.fromJson(Map<String, dynamic> json) { ... }
+```
+
+## 4. **Alternative Construction Methods**
+
+Factory constructors allow you to have multiple ways to create objects without cluttering your main constructor:
+
+```dart
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  // Main constructor
+  const Album({required this.userId, required this.id, required this.title});
+
+  // Factory for JSON parsing
+  factory Album.fromJson(Map<String, dynamic> json) { ... }
+  
+  // Factory for CSV parsing
+  factory Album.fromCsv(String csvLine) {
+    final parts = csvLine.split(',');
+    if (parts.length != 3) {
+      throw const FormatException('Invalid CSV format');
+    }
+    return Album(
+      userId: int.parse(parts[0]),
+      id: int.parse(parts[1]),
+      title: parts[2],
+    );
+  }
+  
+  // Factory for creating empty album
+  factory Album.empty() {
+    return const Album(userId: 0, id: 0, title: '');
+  }
+}
+```
+
+## 5. **Immutability Preservation**
+
+Since your `Album` class uses `final` fields and a `const` constructor, the factory constructor helps maintain immutability by ensuring the object is only created when all validations pass:
+
+```dart
+const Album({required this.userId, required this.id, required this.title});
+//    ↑ This const constructor creates truly immutable objects
+```
+
+## 6. **Better Error Messages**
+
+Factory constructors can provide context-specific error messages:
+
+```dart
+factory Album.fromJson(Map<String, dynamic> json) {
+  return switch (json) {
+    {'userId': int userId, 'id': int id, 'title': String title} => Album(
+      userId: userId,
+      id: id,
+      title: title,
+    ),
+    _ => throw const FormatException('Failed to load album.'),
+    //                                ↑ Clear, specific error message
+  };
+}
+```
+
+## Comparison: With vs Without Factory Constructor
+
+Here's what the code might look like without a factory constructor:
+
+```dart
+// Without factory constructor - problematic approach
+class Album {
+  final int userId;
+  final int id;
+  final String title;
+
+  // This approach has several issues:
+  Album.fromJson(Map<String, dynamic> json) 
+    : userId = json['userId'] as int,      // Could throw at runtime
+      id = json['id'] as int,              // No validation
+      title = json['title'] as String;     // Unclear error messages
+
+  // Or even worse - validation in constructor body:
+  Album.fromJsonWithValidation(Map<String, dynamic> json) 
+    : userId = json['userId'] as int,
+      id = json['id'] as int,
+      title = json['title'] as String {
+    // Validation here happens AFTER object creation
+    if (userId < 0) throw ArgumentError('Invalid userId');
+    // This is too late - object already exists!
+  }
+}
+```
+
+## Real-World Usage Pattern
+
+In practice, this pattern is commonly used with HTTP requests:
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<Album> fetchAlbum(int id) async {
+  final response = await http.get(
+    Uri.parse('https://jsonplaceholder.typicode.com/albums/$id'),
+  );
+
+  if (response.statusCode == 200) {
+    // Factory constructor handles all the JSON parsing complexity
+    return Album.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Failed to load album');
+  }
+}
+```
+
+## Key Benefits Summary
+
+The factory constructor in this JSON parsing scenario provides:
+
+**Safety**: Type checking and validation before object creation
+
+**Clarity**: Clear separation between object creation and data parsing
+
+**Flexibility**: Multiple ways to create objects from different data sources
+
+**Maintainability**: Centralized parsing logic that's easy to test and modify
+
+**Error Handling**: Meaningful error messages for debugging
+
+This pattern is so common in Dart that it's considered a best practice for any class that needs to be created from external data sources like JSON, XML, or database records.
+
+Would you like me to show you how to extend this pattern for more complex scenarios, such as nested objects or handling optional fields?
