@@ -29,6 +29,7 @@ book:
     - part: I/O
       chapters: 
         - "content/dart-json/dart-json-basic.qmd"
+        - "content/dart-json/dart-json-serializable.qmd"
     - part: Dart Advanced 
       chapters: 
         - "content/dart-basic/dart-logging.qmd"
