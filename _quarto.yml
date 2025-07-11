@@ -24,8 +24,10 @@ book:
         - "content/dart-basic/dart-lib-import.qmd"
         - "content/dart-basic/dart-pkg-org.qmd"
         - "content/dart-basic/dart-pkg-app.qmd"
+        - "content/dart-basic/dart-lib-org.qmd"
         - "content/dart-basic/dart-async.qmd"
     - part: Dart Advanced 
+      chapters: 
         - "content/dart-basic/dart-logging.qmd"
         - "content/dart-basic/dart-logging-serious.qmd"
     - part: Dart Misc
