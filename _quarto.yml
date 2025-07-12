@@ -57,9 +57,10 @@ book:
     - part: Flutter Concept
       chapters: 
         - "content/flutter-concept/flutter-controller.qmd"
-    - part: Widgets
+    - part: Image
       chapters: 
-        - "content/flutter-io/flutter-img.qmd"
+        - "content/flutter-image/flutter-img.qmd"
+        - "content/flutter-image/flutter-img-byte-vs-file.qmd"
     # - part: "Example"
     #   chapters: 
     #     - "content/some_example.qmd"
