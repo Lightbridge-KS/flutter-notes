@@ -1,0 +1,152 @@
+# Local PKG Structure
+
+In Dart, you control the entry point and public exports of a package through the main library file in the `lib` directory. This is similar to Python's `__init__.py` but with some key differences.
+
+## Key Concepts
+
+**Library File**: The main entry point is typically `lib/<package_name>.dart` or any file you designate as the public API.
+
+**Export Directive**: Use `export` statements to expose specific symbols from other files, similar to Python's `from .module import something`.
+
+**Private Symbols**: In Dart, symbols starting with underscore `_` are private to the library and won't be accessible outside.
+
+## Simple Example
+
+Let's create a local package called `my_utils`:
+
+```
+my_utils/
+├── lib/
+│   ├── my_utils.dart          # Main entry point (like __init__.py)
+│   ├── src/                   # Private implementation details
+│   │   ├── math_helpers.dart
+│   │   ├── string_helpers.dart
+│   │   └── internal_stuff.dart
+│   └── models/                # Public models
+│       ├── user.dart
+│       └── config.dart
+├── test/
+│   └── my_utils_test.dart
+└── pubspec.yaml
+```
+
+### File Contents
+
+**lib/my_utils.dart** (main entry point):
+
+```dart
+// This is your package's public API - like __init__.py
+
+// Export specific classes/functions from other files
+export 'src/math_helpers.dart' show calculateSum, calculateAverage;
+export 'src/string_helpers.dart' show capitalize, truncate;
+
+// Export entire files (all public symbols)
+export 'models/user.dart';
+export 'models/config.dart';
+
+// You can also hide specific symbols
+export 'src/string_helpers.dart' hide internalStringFunction;
+```
+
+**lib/src/math_helpers.dart**:
+
+```dart
+// Public functions (will be exported)
+double calculateSum(List<double> numbers) {
+  return numbers.reduce((a, b) => a + b);
+}
+
+double calculateAverage(List<double> numbers) {
+  return calculateSum(numbers) / numbers.length;
+}
+
+// Private function (won't be accessible even if exported)
+double _internalCalculation(double x) {
+  return x * 2;
+}
+```
+
+**lib/src/string_helpers.dart**:
+
+```dart
+String capitalize(String text) {
+  if (text.isEmpty) return text;
+  return text[0].toUpperCase() + text.substring(1);
+}
+
+String truncate(String text, int maxLength) {
+  if (text.length <= maxLength) return text;
+  return '${text.substring(0, maxLength)}...';
+}
+
+// This won't be exported based on our export statement
+String internalStringFunction(String s) {
+  return s.toLowerCase();
+}
+```
+
+**lib/models/user.dart**:
+
+```dart
+class User {
+  final String name;
+  final int age;
+  
+  User({required this.name, required this.age});
+}
+
+// Private class - won't be accessible outside
+class _UserValidator {
+  static bool isValid(User user) => user.age > 0;
+}
+```
+
+## Using the Package in Flutter
+
+In your Flutter app's `pubspec.yaml`:
+
+```yaml
+dependencies:
+  my_utils:
+    path: ../my_utils  # Path to your local package
+```
+
+Then in your Flutter code:
+
+```dart
+import 'package:my_utils/my_utils.dart';
+
+void main() {
+  // Only exported symbols are available
+  final sum = calculateSum([1, 2, 3, 4, 5]);
+  final text = capitalize('hello world');
+  final user = User(name: 'John', age: 30);
+  
+  // These would cause errors:
+  // _internalCalculation(5);        // Private function
+  // internalStringFunction('test'); // Not exported
+  // _UserValidator.isValid(user);   // Private class
+}
+```
+
+## Best Practices
+
+1. **Keep `src/` private**: Put implementation details in `lib/src/` - these files shouldn't be imported directly by package users.
+
+2. **Explicit exports**: Be explicit about what you export rather than exporting everything.
+
+3. **Barrel files**: You can create multiple "barrel" files for different features:
+
+```
+lib/
+├── my_utils.dart         # Main entry
+├── math.dart            # Math-specific exports
+├── strings.dart         # String-specific exports
+└── src/
+    └── ...
+```
+
+4. **Documentation**: Document your public API in the main library file to help users understand what's available.
+
+This approach gives you fine-grained control over your package's public API, similar to Python's `__init__.py` but with Dart's export system.
