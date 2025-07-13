@@ -36,6 +36,7 @@ book:
     - part: Config
       chapters: 
         - "content/dart-env/dart-env-var.qmd"
+        - "content/dart-env/dart-vm-mode.qmd"
     - part: Dart Advanced 
       chapters: 
         - "content/dart-basic/dart-logging.qmd"
