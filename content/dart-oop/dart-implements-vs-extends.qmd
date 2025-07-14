@@ -1,0 +1,125 @@
+# Implement vs Extends
+
+I'll explain the `implements` pattern in Dart and how it differs from `extends`, tailored to your programming background.
+
+## The `implements` Pattern
+
+When a class `implements` another class or interface, it's making a **contract** to provide implementations for all the public methods and properties of that class/interface. Think of it like a blueprint that must be followed exactly.
+
+```dart
+class RamaAiException implements Exception {
+  final String message;
+  final int? statusCode;
+  
+  RamaAiException(this.message, [this.statusCode]);
+  
+  @override
+  String toString() => 'RamaAiException: $message';
+}
+```
+
+## Key Differences: `implements` vs `extends`
+
+### `implements` (Contract/Interface)
+
+```dart
+// Using implements - must provide ALL methods
+class CustomException implements Exception {
+  final String message;
+  CustomException(this.message);
+  
+  // Must implement toString if Exception requires it
+  @override
+  String toString() => 'CustomException: $message';
+}
+```
+
+### `extends` (Inheritance)
+
+```dart
+// Using extends - inherits existing functionality
+class CustomException extends Exception {
+  final String message;
+  CustomException(this.message);
+  
+  // Can override, but not required
+  // Inherits default toString() from Exception
+}
+```
+
+## Visual Comparison
+
+```
+implements:           extends:
+    ┌─────────┐          ┌─────────┐
+    │Interface│          │ Parent  │
+    │Contract │          │ Class   │
+    └─────────┘          └─────────┘
+         │                    │
+    "Must follow          "Inherits and
+     this blueprint"       can modify"
+         │                    │
+    ┌─────────┐          ┌─────────┐
+    │Your Class│          │Your Class│
+    │(Complete │          │(Enhanced│
+    │ rewrite) │          │ version)│
+    └─────────┘          └─────────┘
+```
+
+## When to Use Each
+
+**Use `implements` when:**
+
+- You want to ensure your class follows a specific contract
+- You need multiple inheritance-like behavior (Dart allows multiple implements)
+- You're creating a completely different implementation
+
+**Use `extends` when:**
+
+- You want to build upon existing functionality
+- You need to reuse code from a parent class
+- You're creating a specialized version of something
+
+## Multiple Implements Example
+
+```dart
+abstract class Loggable {
+  void log(String message);
+}
+
+abstract class Serializable {
+  Map<String, dynamic> toJson();
+}
+
+class RamaAiException implements Exception, Loggable, Serializable {
+  final String message;
+  final int? statusCode;
+  
+  RamaAiException(this.message, [this.statusCode]);
+  
+  @override
+  void log(String message) {
+    print('LOG: $message');
+  }
+  
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      'statusCode': statusCode,
+    };
+  }
+  
+  @override
+  String toString() => 'RamaAiException: $message';
+}
+```
+
+## Real-World Analogy
+
+Think of it like medical protocols in your radiology work:
+
+- **`implements`**: Following a strict diagnostic protocol - you must perform every required step exactly as specified
+- **`extends`**: Building upon an existing diagnostic approach - you inherit the base procedure but can add specialized techniques
+
+In your `RamaAiException` example, you're saying "this class will behave like an Exception" but you're providing your own complete implementation rather than inheriting existing Exception behavior.
