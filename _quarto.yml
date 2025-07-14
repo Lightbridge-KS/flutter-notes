@@ -18,15 +18,21 @@ book:
         - "content/dart-basic/dart-ctr-flow.qmd"
         - "content/dart-basic/dart-loop-collection.qmd"
         - "content/dart-basic/dart-fn.qmd"
-        - "content/dart-basic/dart-enum.qmd"
-        - "content/dart-basic/dart-oop.qmd" 
-        - "content/dart-basic/dart-mixin.qmd" 
         - "content/dart-basic/dart-lib-import.qmd"
         - "content/dart-basic/dart-pkg-org.qmd"
         - "content/dart-basic/dart-pkg-local.qmd"
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-lib-org.qmd"
         - "content/dart-basic/dart-async.qmd"
+    - part: OOP
+      chapters: 
+        - "content/dart-basic/dart-oop.qmd" 
+        - "content/dart-basic/dart-enum.qmd"
+        - "content/dart-basic/dart-mixin.qmd" 
+        - "content/dart-oop/dart-const-vs-nonconst.qmd"
+        - "content/dart-oop/dart-factory.qmd"
+        - "content/dart-oop/dart-factory-json.qmd"
+        - "content/dart-oop/dart-interface-abs.qmd"
     - part: I/O
       chapters: 
         - "content/dart-json/dart-json-basic.qmd"
@@ -41,9 +47,6 @@ book:
       chapters: 
         - "content/dart-basic/dart-logging.qmd"
         - "content/dart-basic/dart-logging-serious.qmd"
-        - "content/dart-oop/dart-factory.qmd"
-        - "content/dart-oop/dart-factory-json.qmd"
-        - "content/dart-oop/dart-interface-abs.qmd"
     - part: Dart Misc
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"

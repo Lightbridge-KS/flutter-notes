@@ -1,0 +1,225 @@
+# `const` and non-`const` constructors
+
+The difference between `const` and non-`const` constructors relates to when and how objects are created, and whether they can be compile-time constants.
+
+## `const` Constructor
+
+A `const` constructor creates **compile-time constants** - objects that are fully determined at compile time and are immutable. Think of them as "frozen blueprints" that never change.
+
+```dart
+class Point {
+  final int x;
+  final int y;
+  
+  // const constructor - all fields must be final
+  const Point(this.x, this.y);
+}
+
+void main() {
+  // These are compile-time constants
+  const point1 = Point(10, 20);
+  const point2 = Point(10, 20);
+  
+  // Dart optimizes: point1 and point2 are the SAME object in memory
+  print(identical(point1, point2)); // true
+}
+```
+
+## Non-`const` Constructor
+
+A non-`const` constructor creates objects at **runtime**. Each call creates a new instance, even with identical values.
+
+```dart
+class MutablePoint {
+  int x;
+  int y;
+  
+  // Non-const constructor - can have mutable fields
+  MutablePoint(this.x, this.y);
+}
+
+void main() {
+  var point1 = MutablePoint(10, 20);
+  var point2 = MutablePoint(10, 20);
+  
+  // These are different objects in memory
+  print(identical(point1, point2)); // false
+  
+  // You can modify them
+  point1.x = 30;
+}
+```
+
+## Key Differences
+
+Here's a visual representation of the differences:
+
+```
+const Constructor:
+Compile time: Point(10, 20) → [Memory: Object A]
+Runtime:      const p1 = ... → Points to Object A
+              const p2 = ... → Points to Object A (same object!)
+
+Non-const Constructor:
+Runtime: var p1 = Point(10, 20) → [Memory: Object A]
+         var p2 = Point(10, 20) → [Memory: Object B] (different objects)
+```
+
+## Rules for `const` Constructors
+
+**All fields must be `final`**
+```dart
+class ValidConstClass {
+  final String name;
+  final int age;
+  
+  const ValidConstClass(this.name, this.age); // ✅ Valid
+}
+
+class InvalidConstClass {
+  String name; // Not final!
+  final int age;
+  
+  // const InvalidConstClass(this.name, this.age); // ❌ Error!
+}
+```
+
+**All constructor parameters must be compile-time constants**
+```dart
+class Person {
+  final String name;
+  final DateTime birthDate;
+  
+  const Person(this.name, this.birthDate);
+}
+
+void main() {
+  // ✅ Valid - string literal is compile-time constant
+  const person1 = Person('Alice', DateTime(1990, 1, 1));
+  
+  // ❌ Error - DateTime.now() is runtime value
+  // const person2 = Person('Bob', DateTime.now());
+}
+```
+
+## When to Use Each
+
+**Use `const` constructor when:**
+
+1. **Immutable data structures** - Configuration objects, mathematical points, colors
+```dart
+class AppConfig {
+  final String apiUrl;
+  final int timeout;
+  final bool debugMode;
+  
+  const AppConfig({
+    required this.apiUrl,
+    required this.timeout,
+    required this.debugMode,
+  });
+}
+
+// Usage
+const config = AppConfig(
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+  debugMode: false,
+);
+```
+
+2. **Flutter widgets** - Most built-in Flutter widgets use const constructors
+```dart
+const Text('Hello World')
+const Icon(Icons.home)
+const SizedBox(width: 100, height: 50)
+```
+
+3. **Value objects** - Objects that represent values rather than entities
+```dart
+class Money {
+  final double amount;
+  final String currency;
+  
+  const Money(this.amount, this.currency);
+}
+
+const price = Money(29.99, 'USD');
+```
+
+**Use non-`const` constructor when:**
+
+1. **Mutable objects** - Objects that need to change after creation
+```dart
+class Counter {
+  int value;
+  
+  Counter(this.value);
+  
+  void increment() => value++;
+}
+```
+
+2. **Objects with runtime dependencies** - Database connections, HTTP clients
+```dart
+class ApiClient {
+  final String baseUrl;
+  late final Dio _dio;
+  
+  ApiClient(this.baseUrl) {
+    _dio = Dio(BaseOptions(baseUrl: baseUrl));
+  }
+}
+```
+
+3. **Objects that perform side effects** - Logging, file operations
+```dart
+class Logger {
+  final String fileName;
+  
+  Logger(this.fileName) {
+    // Side effect: create log file
+    _createLogFile();
+  }
+  
+  void _createLogFile() {
+    // File creation logic
+  }
+}
+```
+
+## Performance Considerations
+
+`const` constructors provide significant performance benefits:
+
+- **Memory efficiency**: Identical const objects share the same memory location
+- **Build optimization**: Flutter can skip rebuilding const widgets
+- **Compile-time optimization**: Values are computed once at compile time
+
+```dart
+// Flutter example
+class MyWidget extends StatelessWidget {
+  const MyWidget({Key? key}) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text('This widget is const'), // Won't rebuild unnecessarily
+        Text('This widget is not const'),   // May rebuild
+      ],
+    );
+  }
+}
+```
+
+## Quick Decision Guide
+
+Ask yourself:
+
+1. **Will this object ever change after creation?** → If no, consider `const`
+2. **Are all the values known at compile time?** → If yes, use `const`
+3. **Do I need to perform setup operations in the constructor?** → If yes, use non-`const`
+4. **Is this a Flutter widget that won't change?** → Use `const` for performance
+
+The general rule: Use `const` when you can, use regular constructors when you must. Your Flutter apps will be more performant with proper `const` usage!
