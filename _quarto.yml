@@ -61,6 +61,7 @@ book:
         - "content/flutter-basic/flutter-02-structure.qmd"
         - "content/flutter-basic/flutter-lib-structure.qmd"
         - "content/flutter-basic/flutter-03-widgets.qmd"
+        - "content/flutter-basic/flutter-arg-parse.qmd"
     - part: Flutter Concept
       chapters: 
         - "content/flutter-concept/flutter-controller.qmd"
