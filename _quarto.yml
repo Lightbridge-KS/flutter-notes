@@ -13,6 +13,7 @@ book:
       chapters: 
         - "content/dart-basic/dart-convention.qmd"
         - "content/dart-basic/dart-variable.qmd"
+        - "content/dart-howto/dart-sort.qmd"
         - "content/dart-basic/dart-types.qmd"
         - "content/dart-basic/dart-types-generic.qmd"
         - "content/dart-basic/dart-ctr-flow.qmd"

@@ -1,0 +1,73 @@
+# Sort
+
+## Sort List by another List
+
+I'll help you sort a list based on the order defined in a template list. This is a common pattern in programming where you want to maintain a specific ordering.
+
+Here are several approaches to solve this problem:
+
+### Method 1: Using `where()` and `contains()` (Simple approach)
+
+```dart
+List<String> template = ["A", "B", "C", "D"];
+List<String> x = ["D", "B"];
+
+List<String> sortedX = template.where((item) => x.contains(item)).toList();
+print(sortedX); // Output: ["B", "D"]
+```
+
+### Method 2: Using `sort()` with custom comparator
+
+```dart
+List<String> template = ["A", "B", "C", "D"];
+List<String> x = ["D", "B"];
+
+List<String> sortedX = List.from(x);
+sortedX.sort((a, b) => template.indexOf(a).compareTo(template.indexOf(b)));
+print(sortedX); // Output: ["B", "D"]
+```
+
+### Method 3: Creating a reusable function
+
+```dart
+List<T> sortByTemplate<T>(List<T> template, List<T> items) {
+  return template.where((item) => items.contains(item)).toList();
+}
+
+void main() {
+  List<String> template = ["A", "B", "C", "D"];
+  List<String> x = ["D", "B"];
+  
+  List<String> result = sortByTemplate(template, x);
+  print(result); // Output: ["B", "D"]
+}
+```
+
+### Method 4: More efficient approach using Set for larger lists
+
+```dart
+List<String> template = ["A", "B", "C", "D"];
+List<String> x = ["D", "B"];
+
+Set<String> xSet = x.toSet(); // Convert to Set for O(1) lookup
+List<String> sortedX = template.where((item) => xSet.contains(item)).toList();
+print(sortedX); // Output: ["B", "D"]
+```
+
+### How it works:
+
+The key concept is to iterate through the template list in order and filter out only the items that exist in your target list (`x`). This preserves the original ordering from the template.
+
+**Visual representation:**
+```
+Template: [A, B, C, D]
+Target:   [D, B]
+
+Process:
+A → not in target → skip
+B → in target → include
+C → not in target → skip  
+D → in target → include
+
+Result: [B, D]
+```
