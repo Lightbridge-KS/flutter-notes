@@ -52,6 +52,7 @@ book:
       chapters: 
         - "content/dart-misc/dart-final-vs-const.qmd"
         - "content/dart-misc/dart-as-cast.md"
+        - "content/dart-misc/dart-spread-operator.qmd"
     - part: Dart Package
       chapters: 
         - "content/dart-pkg/dart-mustage.qmd"
