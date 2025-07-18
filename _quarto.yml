@@ -28,6 +28,7 @@ book:
     - part: OOP
       chapters: 
         - "content/dart-basic/dart-oop.qmd" 
+        - "content/dart-oop/dart-class-init.qmd"
         - "content/dart-basic/dart-enum.qmd"
         - "content/dart-basic/dart-mixin.qmd" 
         - "content/dart-oop/dart-const-vs-nonconst.qmd"
@@ -53,6 +54,8 @@ book:
         - "content/dart-misc/dart-final-vs-const.qmd"
         - "content/dart-misc/dart-as-cast.md"
         - "content/dart-misc/dart-spread-operator.qmd"
+        - "content/dart-misc/dart-null-guide.qmd"
+        - "content/dart-misc/dart-null-from-api.qmd"
     - part: Dart Package
       chapters: 
         - "content/dart-pkg/dart-mustage.qmd"

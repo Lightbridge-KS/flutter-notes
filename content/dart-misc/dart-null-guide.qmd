@@ -1,0 +1,195 @@
+# `null` Guideline
+
+::: {.callout-note appearance="simple" collapse="false"}
+Optional parameters must be nullable or have a default value. You can use required to make named parameters non-optional. Non-nullable top-level variables and static fields must have initializers. Non-nullable instance fields must be initialized before the constructor body begins.
+:::
+
+Let me break down this Dart documentation into clear sections with examples:
+
+## Optional Parameters Must Be Nullable or Have Default Values
+
+**Nullable optional parameters:**
+```dart
+void greetUser(String name, [String? title]) {
+  print('Hello ${title ?? ''} $name');
+}
+
+// Usage
+greetUser('John'); // title is null
+greetUser('John', 'Dr.'); // title is 'Dr.'
+```
+
+**Optional parameters with default values:**
+```dart
+void greetUser(String name, [String title = 'Mr.']) {
+  print('Hello $title $name');
+}
+
+// Usage
+greetUser('John'); // Uses default 'Mr.'
+greetUser('John', 'Dr.'); // Uses 'Dr.'
+```
+
+**❌ This won't work (non-nullable without default):**
+```dart
+void greetUser(String name, [String title]) { // ERROR!
+  print('Hello $title $name');
+}
+```
+
+## Using `required` for Named Parameters
+
+**Without `required` (optional and nullable):**
+```dart
+class User {
+  String name;
+  String? email; // Optional, can be null
+  
+  User({required this.name, this.email});
+}
+
+// Usage
+User user1 = User(name: 'John'); // email is null
+User user2 = User(name: 'John', email: 'john@example.com');
+```
+
+**With `required` (mandatory named parameters):**
+```dart
+class User {
+  String name;
+  String email;
+  
+  User({required this.name, required this.email});
+}
+
+// Usage
+User user = User(name: 'John', email: 'john@example.com'); // Both required
+// User user = User(name: 'John'); // ERROR! email is required
+```
+
+## Non-nullable Top-level Variables and Static Fields Must Have Initializers
+
+**Top-level variables:**
+```dart
+// ✅ Correct - initialized
+String appName = 'MyApp';
+int version = 1;
+
+// ❌ Error - not initialized
+String appName; // ERROR!
+```
+
+**Static fields:**
+```dart
+class AppConfig {
+  // ✅ Correct - initialized
+  static String appName = 'MyApp';
+  static int maxUsers = 100;
+  
+  // ❌ Error - not initialized
+  static String version; // ERROR!
+}
+```
+
+**Late initialization (when you can't initialize immediately):**
+```dart
+late String configPath; // Will be set before first use
+
+void main() {
+  configPath = '/path/to/config'; // Must set before using
+  print(configPath); // Safe to use now
+}
+```
+
+## Non-nullable Instance Fields Must Be Initialized Before Constructor Body
+
+**Direct initialization:**
+```dart
+class User {
+  String name = 'Unknown'; // Initialized at declaration
+  int age = 0;
+}
+```
+
+**Constructor parameter initialization:**
+```dart
+class User {
+  String name;
+  int age;
+  
+  // ✅ Correct - initialized in constructor signature
+  User(this.name, this.age);
+}
+```
+
+**Initializer list:**
+```dart
+class User {
+  String name;
+  String email;
+  String displayName;
+  
+  // ✅ Correct - initialized before constructor body
+  User(this.name, this.email) : displayName = name.toUpperCase();
+}
+```
+
+**❌ This won't work (initialized in constructor body):**
+```dart
+class User {
+  String name; // ERROR! Not initialized
+  
+  User(String inputName) {
+    name = inputName; // Too late! Must be initialized before body
+  }
+}
+```
+
+**Using `late` for complex initialization:**
+```dart
+class DatabaseConnection {
+  late String connectionString;
+  
+  DatabaseConnection(String host, int port) {
+    // Complex logic that can't be done in initializer list
+    connectionString = 'postgresql://$host:$port/mydb';
+  }
+}
+```
+
+## Real-world Example Combining All Concepts
+
+```dart
+// Top-level variable - must be initialized
+String appVersion = '1.0.0';
+
+class ApiService {
+  // Static field - must be initialized
+  static String baseUrl = 'https://api.example.com';
+  
+  // Instance fields - must be initialized before constructor body
+  String apiKey;
+  String? userAgent; // Nullable, so no initializer required
+  late HttpClient client; // Will be initialized in constructor body
+  
+  // Constructor with required and optional parameters
+  ApiService({
+    required this.apiKey, // Required named parameter
+    this.userAgent, // Optional nullable parameter
+    String timeout = '30s', // Optional with default value
+  }) {
+    // Complex initialization that couldn't be done in initializer list
+    client = HttpClient()
+      ..connectionTimeout = Duration(seconds: int.parse(timeout.replaceAll('s', '')))
+      ..userAgent = userAgent ?? 'MyApp/$appVersion';
+  }
+  
+  // Method with optional parameters
+  Future<String> fetchData(String endpoint, [Map<String, String>? headers]) async {
+    // Implementation here
+    return 'data';
+  }
+}
+```
+
+The core principle is that Dart's null safety system ensures all non-nullable variables have values before they can be used, preventing null reference errors at compile time rather than runtime.

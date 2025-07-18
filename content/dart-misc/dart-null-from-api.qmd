@@ -1,0 +1,114 @@
+# Nullable Data fron API?
+
+
+::: {.callout-note appearance="simple" collapse="false"}
+**Q:** Regarding Dart’s null awareness, If I write code that waiting to receive JSON data from external API, how do I handle the logic of this code?
+:::
+
+
+When handling JSON data from external APIs in Dart, your null safety approach should match your confidence level about the data. Here's how to handle each scenario:
+
+## Scenario 1: Very High Confidence API Data is NOT Null
+
+**Non-nullable type (`String`):**
+```dart
+// Use when you're certain the field exists and has a value
+String name = jsonData['name']; // Will throw if null
+```
+
+**Nullable type (`String?`):**
+```dart
+// Still safe, but adds unnecessary null checks later
+String? name = jsonData['name'];
+String displayName = name ?? 'Unknown'; // Need to handle null
+```
+
+**`late` variable:**
+```dart
+// Good for class fields when you'll assign after construction
+class User {
+  late String name; // Will be assigned in parseJson()
+  
+  void parseJson(Map<String, dynamic> json) {
+    name = json['name']; // Throws if null, but you're confident it won't be
+  }
+}
+```
+
+**Null assertion operator (`!`):**
+```dart
+// Use when JSON might be dynamic but you're confident about the value
+String name = jsonData['name']!; // Explicit "I know this isn't null"
+```
+
+## Scenario 2: API Data CAN Be Null
+
+**Non-nullable type (`String`):**
+```dart
+// DON'T use - will cause runtime errors
+String name = jsonData['name']; // ❌ Dangerous if null
+```
+
+**Nullable type (`String?`):**
+```dart
+// ✅ BEST approach - handle null safely
+String? name = jsonData['name'];
+String displayName = name ?? 'No name provided';
+```
+
+**`late` variable:**
+```dart
+// ❌ DON'T use - defeats null safety purpose
+late String name; // Will throw at runtime if assigned null
+```
+
+**Null assertion operator (`!`):**
+```dart
+// ❌ DON'T use - will crash if null
+String name = jsonData['name']!; // Dangerous assumption
+```
+
+## Recommended Patterns
+
+**For highly reliable APIs:**
+```dart
+class User {
+  final String id;
+  final String email;
+  
+  User.fromJson(Map<String, dynamic> json)
+    : id = json['id'],
+      email = json['email'];
+}
+```
+
+**For APIs that might have null values:**
+```dart
+class User {
+  final String id;
+  final String? nickname; // Optional field
+  final String email;
+  
+  User.fromJson(Map<String, dynamic> json)
+    : id = json['id'],
+      nickname = json['nickname'], // Can be null
+      email = json['email'] ?? 'unknown@example.com'; // Provide fallback
+}
+```
+
+**Defensive parsing with validation:**
+```dart
+User.fromJson(Map<String, dynamic> json) {
+  // Validate required fields
+  final id = json['id'] as String?;
+  if (id == null) throw ArgumentError('User ID cannot be null');
+  
+  return User(
+    id: id,
+    nickname: json['nickname'] as String?, // Explicitly nullable
+    email: json['email'] as String? ?? 'unknown@example.com',
+  );
+}
+```
+
+The key principle: **match your null safety strategy to your actual confidence level about the API data, not your hopes about it**.
