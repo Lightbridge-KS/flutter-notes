@@ -69,6 +69,9 @@ book:
     - part: Flutter Concept
       chapters: 
         - "content/flutter-concept/flutter-controller.qmd"
+    - part: Flutter State
+      chapters: 
+        - "content/flutter-state/riverpod.qmd"
     - part: Image
       chapters: 
         - "content/flutter-image/flutter-img.qmd"
