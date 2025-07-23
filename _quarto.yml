@@ -44,6 +44,7 @@ book:
     - part: Config
       chapters: 
         - "content/dart-env/dart-env-var.qmd"
+        - "content/dart-env/dart-env-dart-define.qmd"
         - "content/dart-env/dart-vm-mode.qmd"
     - part: Dart Advanced 
       chapters: 

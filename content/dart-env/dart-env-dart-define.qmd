@@ -1,0 +1,85 @@
+# Dart Define
+
+**Q:** How do I get the environment variable set in the `--dart-define` in Dart?
+
+In Dart/Flutter, you can access environment variables that were set using `--dart-define` through the `String.fromEnvironment()` constructor. Here's how:
+
+## Basic Usage
+
+```dart
+// Access a dart-define variable
+const String apiKey = String.fromEnvironment('API_KEY');
+const String environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+```
+
+## Common Pattern for Different Data Types
+
+```dart
+// String values
+const String apiUrl = String.fromEnvironment('API_URL', defaultValue: 'https://api.example.com');
+
+// Boolean values
+const bool isDebugMode = bool.fromEnvironment('DEBUG_MODE', defaultValue: false);
+
+// Integer values
+const int timeout = int.fromEnvironment('TIMEOUT_SECONDS', defaultValue: 30);
+```
+
+## Practical Example
+
+Let's say you run your Flutter app like this:
+```bash
+flutter run --dart-define=API_KEY=abc123 --dart-define=ENVIRONMENT=staging --dart-define=DEBUG_MODE=true
+```
+
+You can access these in your Dart code:
+
+```dart
+class AppConfig {
+  static const String apiKey = String.fromEnvironment('API_KEY');
+  static const String environment = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+  static const bool debugMode = bool.fromEnvironment('DEBUG_MODE', defaultValue: false);
+  
+  static void printConfig() {
+    print('API Key: $apiKey');
+    print('Environment: $environment');
+    print('Debug Mode: $debugMode');
+  }
+}
+```
+
+## Best Practices
+
+Create a dedicated config class to centralize your environment variables:
+
+```dart
+class EnvConfig {
+  // API Configuration
+  static const String apiBaseUrl = String.fromEnvironment('API_BASE_URL', 
+    defaultValue: 'https://api.development.com');
+  static const String apiKey = String.fromEnvironment('API_KEY', 
+    defaultValue: '');
+  
+  // App Configuration  
+  static const String appName = String.fromEnvironment('APP_NAME', 
+    defaultValue: 'My App');
+  static const bool enableLogging = bool.fromEnvironment('ENABLE_LOGGING', 
+    defaultValue: true);
+  
+  // Validation
+  static bool get isApiKeyValid => apiKey.isNotEmpty;
+  
+  static void validateConfig() {
+    assert(isApiKeyValid, 'API_KEY must be provided');
+  }
+}
+```
+
+The key points:
+
+- Use `String.fromEnvironment()`, `bool.fromEnvironment()`, or `int.fromEnvironment()`
+- Always provide `defaultValue` for safer fallbacks
+- These are compile-time constants, so they're resolved during build
+- Perfect for API keys, environment settings, feature flags, etc.
+
+This approach keeps your sensitive configuration out of your source code while making it easy to switch between different environments (development, staging, production).
