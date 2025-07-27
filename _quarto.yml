@@ -74,9 +74,10 @@ book:
       chapters: 
         - "content/flutter-state/state-basic-counter.qmd"
         - "content/flutter-state/state-provider-counter.qmd"
+        - "content/flutter-state/riverpod.qmd"
         - "content/flutter-state/state-riverpod-counter.qmd"
         - "content/flutter-state/state-riverpod-counter-concept.qmd"
-        - "content/flutter-state/riverpod.qmd"
+        - "content/flutter-state/state-riverpod-mvvm.qmd"
     - part: Image
       chapters: 
         - "content/flutter-image/flutter-img.qmd"

@@ -1,0 +1,456 @@
+# MVVM in Riverpod
+
+::: {.callout-note appearance="simple" collapse="false"}
+**Q:** I'm wondering if MVVM architecture can be used with Riverpod. If so, please give a simple example with explanation and diagrams.
+:::
+
+
+Excellent question! Yes, MVVM (Model-View-ViewModel) architecture works beautifully with Riverpod. In fact, Riverpod's design naturally supports MVVM patterns. Let me show you how to implement a simple user profile app using MVVM with Riverpod.
+
+## MVVM + Riverpod Example: User Profile App
+
+### Model Layer (Data & Business Logic)
+
+```dart
+// models/user.dart
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final int age;
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.age,
+  });
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    int? age,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      age: age ?? this.age,
+    );
+  }
+}
+
+// services/user_repository.dart
+class UserRepository {
+  // Simulates API calls
+  Future<User> fetchUser(String id) async {
+    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
+    return User(
+      id: id,
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      age: 30,
+    );
+  }
+
+  Future<void> updateUser(User user) async {
+    await Future.delayed(Duration(milliseconds: 500));
+    // Simulate API update
+    print('User updated: ${user.name}');
+  }
+}
+```
+
+### ViewModel Layer (Riverpod Providers)
+
+```dart
+// viewmodels/user_viewmodel.dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Repository provider
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  return UserRepository();
+});
+
+// ViewModel state
+class UserViewState {
+  final User? user;
+  final bool isLoading;
+  final String? error;
+
+  UserViewState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+  });
+
+  UserViewState copyWith({
+    User? user,
+    bool? isLoading,
+    String? error,
+  }) {
+    return UserViewState(
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
+    );
+  }
+}
+
+// ViewModel (StateNotifier)
+class UserViewModel extends StateNotifier<UserViewState> {
+  final UserRepository _repository;
+
+  UserViewModel(this._repository) : super(UserViewState());
+
+  // ViewModel methods (business logic for UI)
+  Future<void> loadUser(String userId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      final user = await _repository.fetchUser(userId);
+      state = state.copyWith(user: user, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
+  Future<void> updateUserName(String newName) async {
+    if (state.user == null) return;
+
+    final updatedUser = state.user!.copyWith(name: newName);
+    
+    // Optimistic update
+    state = state.copyWith(user: updatedUser);
+    
+    try {
+      await _repository.updateUser(updatedUser);
+    } catch (e) {
+      // Revert on error
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+}
+
+// ViewModel provider
+final userViewModelProvider = StateNotifierProvider<UserViewModel, UserViewState>((ref) {
+  final repository = ref.watch(userRepositoryProvider);
+  return UserViewModel(repository);
+});
+```
+
+### View Layer (Flutter Widgets)
+
+```dart
+// views/user_profile_page.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class UserProfilePage extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewState = ref.watch(userViewModelProvider);
+    final viewModel = ref.read(userViewModelProvider.notifier);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('User Profile')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Load user button
+            ElevatedButton(
+              onPressed: () => viewModel.loadUser('123'),
+              child: Text('Load User'),
+            ),
+            SizedBox(height: 20),
+            
+            // Content based on state
+            if (viewState.isLoading)
+              LoadingView(),
+            else if (viewState.error != null)
+              ErrorView(
+                error: viewState.error!,
+                onRetry: () => viewModel.clearError(),
+              ),
+            else if (viewState.user != null)
+              UserDetailsView(user: viewState.user!),
+            else
+              EmptyView(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LoadingView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Loading user...'),
+        ],
+      ),
+    );
+  }
+}
+
+class ErrorView extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+
+  ErrorView({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          Icon(Icons.error, color: Colors.red, size: 48),
+          SizedBox(height: 16),
+          Text('Error: $error'),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: onRetry,
+            child: Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class UserDetailsView extends ConsumerWidget {
+  final User user;
+
+  UserDetailsView({required this.user});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.read(userViewModelProvider.notifier);
+
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${user.name}', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 8),
+            Text('Email: ${user.email}'),
+            SizedBox(height: 8),
+            Text('Age: ${user.age}'),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showEditNameDialog(context, viewModel),
+              child: Text('Edit Name'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditNameDialog(BuildContext context, UserViewModel viewModel) {
+    final controller = TextEditingController(text: user.name);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Name'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: 'Name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              viewModel.updateUserName(controller.text);
+              Navigator.pop(context);
+            },
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EmptyView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('No user data. Press "Load User" to fetch data.'),
+    );
+  }
+}
+```
+
+## MVVM Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        MVVM + Riverpod                         │
+│                                                                 │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐ │
+│  │      MODEL      │    │   VIEWMODEL     │    │      VIEW       │ │
+│  │                 │    │                 │    │                 │ │
+│  │ • User          │◄───┤ • UserViewModel │◄───┤ • UserProfilePage│ │
+│  │ • UserRepository│    │ • UserViewState │    │ • LoadingView   │ │
+│  │                 │    │                 │    │ • ErrorView     │ │
+│  │ Data & Business │    │ UI Logic &      │    │ UI Components   │ │
+│  │ Logic           │    │ State Mgmt      │    │ & User Input    │ │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Riverpod Provider Relationship Diagram
+
+```
+Provider Dependency Graph:
+
+┌─────────────────────────────────┐
+│      userRepositoryProvider     │
+│  ┌─────────────────────────┐    │
+│  │    UserRepository       │    │
+│  │  • fetchUser()          │    │
+│  │  • updateUser()         │    │
+│  └─────────────────────────┘    │
+└─────────────────────────────────┘
+                │
+                │ Injected via ref.watch()
+                ▼
+┌─────────────────────────────────┐
+│    userViewModelProvider        │
+│  ┌─────────────────────────┐    │
+│  │     UserViewModel       │    │
+│  │  • loadUser()           │    │
+│  │  • updateUserName()     │    │
+│  │  • clearError()         │    │
+│  │                         │    │
+│  │  State: UserViewState   │    │
+│  │  • user: User?          │    │
+│  │  • isLoading: bool      │    │
+│  │  • error: String?       │    │
+│  └─────────────────────────┘    │
+└─────────────────────────────────┘
+                │
+                │ ref.watch() / ref.read()
+                ▼
+┌─────────────────────────────────┐
+│           View Layer            │
+│  • UserProfilePage             │
+│  • LoadingView                  │
+│  • ErrorView                    │
+│  • UserDetailsView             │
+└─────────────────────────────────┘
+```
+
+## Data Flow Diagram
+
+```
+User Interaction Flow:
+
+1. User taps "Load User"
+        │
+        ▼
+2. View calls: ref.read(userViewModelProvider.notifier).loadUser('123')
+        │
+        ▼
+3. UserViewModel.loadUser() called
+        │
+        ├─ Sets state: isLoading = true
+        ├─ Calls: _repository.fetchUser('123')
+        │           │
+        │           ▼
+        │       UserRepository.fetchUser() (Model layer)
+        │           │
+        │           ▼
+        │       Returns User data
+        │
+        └─ Sets state: user = userData, isLoading = false
+        │
+        ▼
+4. Riverpod notifies all watchers
+        │
+        ▼
+5. UserProfilePage rebuilds
+        │
+        ▼
+6. Shows UserDetailsView with user data
+
+State Management Flow:
+
+┌─────────────────────────────────────────────────────────────┐
+│                    UserViewState                            │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ Initial: { user: null, isLoading: false, error: null }│   │
+│  │                          │                          │    │
+│  │                          ▼                          │    │
+│  │ Loading: { user: null, isLoading: true, error: null }│   │
+│  │                          │                          │    │
+│  │                          ▼                          │    │
+│  │ Success: { user: User(), isLoading: false, error: null }││ │
+│  │                          │                          │    │
+│  │                          ▼                          │    │
+│  │ Error: { user: null, isLoading: false, error: "..." }│   │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Key Benefits of MVVM + Riverpod
+
+### 1. **Clear Separation of Concerns**
+
+- **Model**: Pure business logic and data (testable without Flutter)
+- **ViewModel**: UI state management and coordination (testable with mocks)
+- **View**: Pure UI components (focused on presentation)
+
+### 2. **Testability**
+
+```dart
+// Easy to unit test ViewModel
+test('should load user successfully', () async {
+  final mockRepo = MockUserRepository();
+  final viewModel = UserViewModel(mockRepo);
+  
+  when(mockRepo.fetchUser('123')).thenAnswer((_) async => testUser);
+  
+  await viewModel.loadUser('123');
+  
+  expect(viewModel.state.user, equals(testUser));
+  expect(viewModel.state.isLoading, false);
+});
+```
+
+### 3. **Reactive UI**
+
+Views automatically update when ViewModel state changes, similar to your experience with reactive programming in R.
+
+### 4. **Dependency Injection**
+
+Riverpod handles dependency injection cleanly:
+
+```dart
+final userViewModelProvider = StateNotifierProvider<UserViewModel, UserViewState>((ref) {
+  final repository = ref.watch(userRepositoryProvider); // Auto-injected
+  return UserViewModel(repository);
+});
+```
+
+This MVVM + Riverpod pattern scales very well for complex Flutter applications and provides excellent separation of concerns, making your code more maintainable and testable.
