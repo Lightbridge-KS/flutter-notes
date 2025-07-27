@@ -1,0 +1,132 @@
+# Riverpod (Understand)
+
+::: {.callout-note appearance="simple" collapse="false"}
+**Q:** So, essentially the riverpod's "Provider" provides:
+
+1. **Notifier:** give state and methods to operate on state.
+2. **WidgetRef:** give methods (like `watch()`, `read()`) for the consumers to know when to rebuild (with `watch()`) and what notifier method to notified when callback was involk (with `read()`)
+
+Am I understand correctly?
+:::
+
+
+Yes, you're understanding it correctly! Let me clarify and expand on your understanding:
+
+## Riverpod's Provider System
+
+You're right that the **Provider** gives you access to two main things, but let me refine the explanation:
+
+### 1. **The Notifier** (State + Methods)
+```dart
+// The provider gives you access to the CounterNotifier instance
+final counterProvider = StateNotifierProvider<CounterNotifier, int>((ref) {
+  return CounterNotifier(); // This is the notifier
+});
+
+// Access the notifier to call methods
+ref.read(counterProvider.notifier).increment();
+//                    ^^^^^^^^
+//                    Gets the CounterNotifier instance
+```
+
+### 2. **WidgetRef** (Consumer Interface)
+```dart
+class CounterDisplay extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    //                                  ^^^^^^^^^^^
+    //                                  This is WidgetRef
+    
+    // WidgetRef provides these methods:
+    final count = ref.watch(counterProvider);    // Subscribe & rebuild
+    ref.read(counterProvider.notifier).increment(); // One-time access
+    
+    return Text('$count');
+  }
+}
+```
+
+## Visual Breakdown:
+
+````dart
+┌─────────────────────────────────────────────────────────────┐
+│                    Provider System                          │
+│                                                             │
+│  StateNotifierProvider<CounterNotifier, int>               │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │                  Provides                           │    │
+│  │                                                     │    │
+│  │  1. Notifier Instance (CounterNotifier)            │    │
+│  │     ├── State: int                                  │    │
+│  │     ├── Methods: increment(), decrement(), reset()  │    │
+│  │     └── Business Logic                              │    │
+│  │                                                     │    │
+│  │  2. Access Interface (via WidgetRef)               │    │
+│  │     ├── ref.watch() - Subscribe to changes         │    │
+│  │     ├── ref.read() - One-time access               │    │
+│  │     └── ref.listen() - Side effects                │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ Used by ConsumerWidgets
+                              ▼
+            ┌─────────────────────────────────────┐
+            │         ConsumerWidget              │
+            │                                     │
+            │ build(context, WidgetRef ref) {     │
+            │   // Access state                   │
+            │   final count = ref.watch(provider); │
+            │                                     │
+            │   // Access methods                 │
+            │   ref.read(provider.notifier)       │
+            │      .increment();                  │
+            │ }                                   │
+            └─────────────────────────────────────┘
+````
+
+## Key Points:
+
+### **WidgetRef Methods:**
+
+```dart
+// ref.watch() - Subscribes to changes, rebuilds widget when state changes
+final count = ref.watch(counterProvider);
+
+// ref.read() - One-time access, no rebuilds, used for calling methods
+ref.read(counterProvider.notifier).increment();
+
+// ref.listen() - For side effects (navigation, showing snackbars, etc.)
+ref.listen(counterProvider, (previous, next) {
+  if (next > 10) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Count is over 10!')),
+    );
+  }
+});
+```
+
+### **Two Different Access Patterns:**
+
+```dart
+// 1. Access STATE (for display)
+final currentCount = ref.watch(counterProvider);
+//    ^^^^^^^^^^^^                ^^^^^^^^^^^^^
+//    Gets the int                 Returns current state value
+
+// 2. Access NOTIFIER (for actions)
+ref.read(counterProvider.notifier).increment();
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//       Gets CounterNotifier instance and calls method
+```
+
+## Complete Flow:
+
+1. **Provider** creates and manages the **Notifier**
+2. **ConsumerWidget** gets **WidgetRef** in its build method
+3. **WidgetRef** provides methods to interact with providers:
+   - `watch()` for subscribing to state changes
+   - `read()` for accessing notifier methods
+4. When notifier methods modify state, Riverpod automatically notifies all watchers
+5. Widgets that `watch()` the provider rebuild with new state
+
+So yes, your understanding is spot on! The Provider system gives you both the state management (notifier) and the consumption interface (WidgetRef) to build reactive UIs.

@@ -72,6 +72,10 @@ book:
         - "content/flutter-concept/flutter-controller.qmd"
     - part: Flutter State
       chapters: 
+        - "content/flutter-state/state-basic-counter.qmd"
+        - "content/flutter-state/state-provider-counter.qmd"
+        - "content/flutter-state/state-riverpod-counter.qmd"
+        - "content/flutter-state/state-riverpod-counter-concept.qmd"
         - "content/flutter-state/riverpod.qmd"
     - part: Image
       chapters: 
@@ -90,5 +94,6 @@ format:
     theme:
       - cosmo
       - brand
+    toc-depth: 4
 
 freeze: auto

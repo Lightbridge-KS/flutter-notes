@@ -1,0 +1,422 @@
+# State management (Counter App)
+
+
+## Prop Drilling
+
+
+Prop drilling occurs when you need to pass data from a parent widget down through multiple layers of child widgets, even when intermediate widgets don't actually use that data themselves. Each widget in the chain must accept and forward the data to its children.
+
+This is similar to passing props through multiple React components or passing parameters through nested function calls in Python.
+
+
+
+### Simple Example
+
+Let's say we have a counter app where the count value needs to reach a deeply nested button:
+
+::: {.callout-note appearance="simple" collapse="true"}
+#### Code
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int counter = 0;
+
+  void incrementCounter() {
+    setState(() {
+      counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomePage(counter: counter, onIncrement: incrementCounter),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  final int counter;
+  final VoidCallback onIncrement;
+
+  HomePage({required this.counter, required this.onIncrement});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Counter App')),
+      body: MainContent(counter: counter, onIncrement: onIncrement),
+    );
+  }
+}
+
+class MainContent extends StatelessWidget {
+  final int counter;
+  final VoidCallback onIncrement;
+
+  MainContent({required this.counter, required this.onIncrement});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CounterSection(counter: counter, onIncrement: onIncrement),
+    );
+  }
+}
+
+class CounterSection extends StatelessWidget {
+  final int counter;
+  final VoidCallback onIncrement;
+
+  CounterSection({required this.counter, required this.onIncrement});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Count: $counter'),
+        SizedBox(height: 20),
+        CounterButton(onIncrement: onIncrement),
+      ],
+    );
+  }
+}
+
+class CounterButton extends StatelessWidget {
+  final VoidCallback onIncrement;
+
+  CounterButton({required this.onIncrement});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(onPressed: onIncrement, child: Text('Increment'));
+  }
+}
+
+```
+:::
+
+
+
+
+### Widget Tree Diagram
+
+```
+MyApp (StatefulWidget)
+├── counter: 0
+├── incrementCounter()
+└── HomePage
+    ├── counter: 0 (passed down)
+    ├── onIncrement: incrementCounter (passed down)
+    └── MainContent
+        ├── counter: 0 (passed down)
+        ├── onIncrement: incrementCounter (passed down)
+        └── CounterSection
+            ├── counter: 0 (passed down)
+            ├── onIncrement: incrementCounter (passed down)
+            ├── Text('Count: $counter') (uses counter)
+            └── CounterButton
+                └── onIncrement: incrementCounter (finally used!)
+```
+
+### Data Flow Diagram
+
+```
+State Management (MyApp)
+        |
+        | counter: int
+        | incrementCounter: function
+        ▼
+    HomePage
+        |
+        | (props drilling - just passing through)
+        ▼
+    MainContent  
+        |
+        | (props drilling - just passing through)
+        ▼
+    CounterSection
+        |
+        ├─────────────────────┐
+        |                     |
+        | counter (used)      | onIncrement (passed down)
+        ▼                     ▼
+    Text Widget         CounterButton
+                             |
+                             | onIncrement (finally used!)
+                             ▼
+                        User taps button
+                             |
+                             ▼
+                        Calls incrementCounter()
+                             |
+                             ▼
+                        Updates state in MyApp
+                             |
+                             ▼
+                        Rebuilds entire tree
+```
+
+### Problems with Prop Drilling
+
+Notice how `HomePage` and `MainContent` don't actually use the counter or increment function - they just pass it through. This creates several issues:
+
+- **Verbose code**: Every intermediate widget needs to accept and pass props
+- **Tight coupling**: Changes to data structure require updates to many widgets  
+- **Maintenance burden**: Adding new data means updating the entire chain
+- **Performance**: Unnecessary rebuilds of intermediate widgets
+
+This is why Flutter provides state management solutions like Provider, Riverpod, Bloc, and others to avoid prop drilling. These allow widgets to access shared state directly without passing data through every level.
+
+
+
+
+## InheritedWidget Solution
+
+
+::: {.callout-note appearance="simple" collapse="true"}
+### Code Example
+
+```dart
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+// InheritedWidget to share counter state
+class CounterInheritedWidget extends InheritedWidget {
+  final int counter;
+  final VoidCallback onIncrement;
+
+  const CounterInheritedWidget({
+    Key? key,
+    required this.counter,
+    required this.onIncrement,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  // Static method to access the inherited widget from any descendant
+  static CounterInheritedWidget? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<CounterInheritedWidget>();
+  }
+
+  @override
+  bool updateShouldNotify(CounterInheritedWidget oldWidget) {
+    // Rebuild dependents when counter changes
+    return counter != oldWidget.counter;
+  }
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int counter = 0;
+
+  void incrementCounter() {
+    setState(() {
+      counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CounterInheritedWidget(
+        counter: counter,
+        onIncrement: incrementCounter,
+        child: HomePage(),
+      ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // No need to pass props anymore!
+    return Scaffold(
+      appBar: AppBar(title: Text('Counter App')),
+      body: MainContent(),
+    );
+  }
+}
+
+class MainContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // No need to pass props anymore!
+    return Center(
+      child: CounterSection(),
+    );
+  }
+}
+
+class CounterSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Access inherited data directly
+    final inheritedWidget = CounterInheritedWidget.of(context)!;
+    
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Count: ${inheritedWidget.counter}'),
+        SizedBox(height: 20),
+        CounterButton(),
+      ],
+    );
+  }
+}
+
+class CounterButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Access inherited callback directly
+    final inheritedWidget = CounterInheritedWidget.of(context)!;
+    
+    return ElevatedButton(
+      onPressed: inheritedWidget.onIncrement,
+      child: Text('Increment'),
+    );
+  }
+}
+```
+
+:::
+
+
+
+### Widget Tree Diagram with InheritedWidget
+
+```
+MyApp (StatefulWidget)
+├── counter: 0
+├── incrementCounter()
+└── CounterInheritedWidget
+    ├── counter: 0 (stored here)
+    ├── onIncrement: incrementCounter (stored here)
+    └── HomePage
+        └── MainContent (clean - no props!)
+            └── CounterSection
+                ├── accesses InheritedWidget ──┐
+                ├── Text('Count: $counter')    │
+                └── CounterButton              │
+                    └── accesses InheritedWidget ──┘
+                        │
+                        └── Uses onIncrement callback
+```
+
+### Data Flow and Callback Diagram
+
+```
+State Management (MyApp)
+        |
+        | counter: int
+        | incrementCounter: function
+        ▼
+CounterInheritedWidget (Data Hub)
+        |
+        | Stores and broadcasts:
+        | - counter
+        | - onIncrement
+        |
+        ├─────────────────────────────────────┐
+        |                                     |
+        | Widget tree continues               | Direct access via
+        | (no prop drilling!)                 | context.dependOnInheritedWidget
+        |                                     |
+        ▼                                     ▼
+    HomePage                          ┌─────────────────┐
+        |                             │  Any descendant │
+        ▼                             │  widget can:    │
+    MainContent                       │  1. Access data │
+        |                             │  2. Get callback│
+        ▼                             └─────────────────┘
+    CounterSection ──────────────────────────┘
+        |                                    │
+        ├─ Text (reads counter) ◄────────────┘
+        |                                    │
+        └─ CounterButton ◄───────────────────┘
+               |
+               | User taps → calls onIncrement
+               ▼
+          incrementCounter() in MyApp
+               |
+               ▼
+          setState() updates counter
+               |
+               ▼
+          InheritedWidget.updateShouldNotify()
+               |
+               ▼
+          Only widgets that depend on InheritedWidget rebuild
+```
+
+### How InheritedWidget Works
+
+**1. Data Broadcasting:**
+
+The `CounterInheritedWidget` acts like a radio tower - it broadcasts data to all widgets below it in the tree.
+
+**2. Selective Access:**
+
+```dart
+final inheritedWidget = CounterInheritedWidget.of(context)!;
+```
+
+Any descendant widget can "tune in" to get the data directly, without intermediate widgets needing to know about it.
+
+**3. Efficient Updates:**
+
+```dart
+@override
+bool updateShouldNotify(CounterInheritedWidget oldWidget) {
+  return counter != oldWidget.counter;  // Only rebuild when counter changes
+}
+```
+
+Flutter only rebuilds widgets that actually depend on the InheritedWidget when the data changes.
+
+### Key Benefits Over Prop Drilling
+
+**Clean Intermediate Widgets:**
+
+- `HomePage` and `MainContent` are now completely clean
+- They don't need to know about or pass any data
+- Easier to maintain and test
+
+**Direct Access:**
+
+- Widgets that need data can access it directly
+- No need to thread parameters through multiple layers
+- Similar to how you might use global variables in Python, but safer
+
+**Performance:**
+
+- Only widgets that actually use the data get rebuilt
+- Intermediate widgets remain unchanged
+- Flutter's dependency tracking handles the optimization
+
+**Flexible Architecture:**
+
+- Easy to add new data without changing intermediate widgets
+- Widgets can choose what data they need
+- Decoupled components
+
+This is the foundation that more advanced state management solutions like Provider are built upon. Provider is essentially a more ergonomic wrapper around InheritedWidget.
