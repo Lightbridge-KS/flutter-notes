@@ -1,0 +1,95 @@
+# Mockito
+
+## GenerateMocks
+
+The `@GenerateMocks([http.Client])` annotation is a **code generation directive** that tells the `mockito` package to automatically create mock classes for you.
+
+### What It Does
+
+This annotation generates a mock version of `http.Client` called `MockClient` that you can use in your tests.
+
+### How It Works
+
+**1. You write the annotation:**
+```dart
+import 'package:mockito/annotations.dart';
+import 'package:http/http.dart' as http;
+
+@GenerateMocks([http.Client])
+void main() {
+  // your tests
+}
+```
+
+**2. Run code generation:**
+```bash
+dart run build_runner build
+```
+
+**3. Mockito generates a file** (usually `your_test_file.mocks.dart`) containing:
+```dart
+// Auto-generated mock class
+class MockClient extends Mock implements http.Client {
+  // All the methods from http.Client are implemented
+  // but they do nothing by default (return null/throw)
+}
+```
+
+### File Structure Example
+
+```
+test/
+├── api_test.dart                 # Your test file with @GenerateMocks
+├── api_test.mocks.dart          # Auto-generated mock classes
+└── ...
+```
+
+### Usage in Tests
+
+After generation, you can use the mock:
+
+```dart
+import 'api_test.mocks.dart';  // Import the generated mocks
+
+void main() {
+  late MockClient mockClient;
+  
+  setUp(() {
+    mockClient = MockClient();  // Use the generated mock class
+  });
+  
+  test('should make POST request', () {
+    // Now you can use when().thenAnswer() on mockClient
+    when(mockClient.post(/* ... */)).thenAnswer((_) async => mockResponse);
+  });
+}
+```
+
+### Why Use Code Generation?
+
+**Before (manual mocking):**
+```dart
+class MockClient extends Mock implements http.Client {}  // You write this
+```
+
+**After (with @GenerateMocks):**
+- Mockito writes it for you
+- Ensures all methods are properly implemented
+- Updates automatically when the original class changes
+- Reduces boilerplate code
+
+## Visual Process
+
+```
+@GenerateMocks([http.Client])
+         ↓
+dart run build_runner build
+         ↓
+Analyzes http.Client interface
+         ↓
+Generates MockClient class
+         ↓
+You import and use MockClient in tests
+```
+
+This approach is especially useful when mocking complex classes with many methods, as Mockito handles all the implementation details for you.

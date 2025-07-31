@@ -83,6 +83,10 @@ book:
         - "content/flutter-image/flutter-img.qmd"
         - "content/flutter-image/flutter-img-byte-vs-file.qmd"
         - "content/flutter-image/flutter-img-base64-wf.qmd"
+    - part: Test
+      chapters: 
+        - "content/unittest/test-basic.qmd"
+        - "content/unittest/mockito-basic.qmd"
     # - part: "Example"
     #   chapters: 
     #     - "content/some_example.qmd"
