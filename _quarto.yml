@@ -25,6 +25,7 @@ book:
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-lib-org.qmd"
         - "content/dart-basic/dart-async.qmd"
+        - "content/dart-basic/dart-string.qmd"
     - part: OOP
       chapters: 
         - "content/dart-basic/dart-oop.qmd" 

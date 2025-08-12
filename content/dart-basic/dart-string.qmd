@@ -1,0 +1,64 @@
+# String 
+
+## String Interpolation
+
+### Multi-line String Literals
+
+**Triple quotes (most similar to Python):**
+```dart
+String multiLine = '''
+This is a multi-line string
+just like Python's triple quotes.
+You can include line breaks naturally.
+''';
+
+// Or with double quotes
+String anotherMultiLine = """
+This also works with double quotes.
+Line breaks are preserved.
+""";
+```
+
+**Adjacent string concatenation:**
+```dart
+String concatenated = 'This is line one '
+    'and this continues on the same logical line '
+    'but split across multiple physical lines.';
+```
+
+### String Interpolation in Multi-line Strings
+
+Dart's string interpolation works great with multi-line strings:
+
+```dart
+String name = 'Dr. Smith';
+int age = 35;
+
+String profile = '''
+Doctor Profile:
+Name: $name
+Age: $age
+Specialty: ${name.contains('Dr') ? 'Medical' : 'Unknown'}
+''';
+```
+
+### Raw Multi-line Strings
+
+Use `r` prefix to create raw strings (no escape sequences processed):
+
+```dart
+String rawMultiLine = r'''
+This is a raw multi-line string.
+\n won't create a new line
+${name} won't interpolate
+''';
+```
+
+The triple quote syntax (`'''` or `"""`) is the most direct equivalent to Python's approach and is commonly used in Flutter for things like:
+
+- Multi-line text widgets
+- SQL queries
+- JSON templates
+- Documentation strings
+
+This should feel quite familiar coming from your Python background!
