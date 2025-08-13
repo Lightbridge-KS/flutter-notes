@@ -71,6 +71,9 @@ book:
     - part: Flutter Concept
       chapters: 
         - "content/flutter-concept/flutter-controller.qmd"
+    - part: Error Handling
+      chapters: 
+        - "content/flutter-error/flutter-error-design.md"
     - part: Flutter State
       chapters: 
         - "content/flutter-state/state-basic-counter.qmd"
