@@ -24,7 +24,6 @@ book:
         - "content/dart-basic/dart-pkg-local.qmd"
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-lib-org.qmd"
-
         - "content/dart-basic/dart-string.qmd"
     - part: OOP
       chapters: 
@@ -40,6 +39,11 @@ book:
       chapters: 
         - "content/dart-async/dart-async.qmd"
         - "content/dart-async/dart-stream.qmd"
+    - part: Logging
+      chapters: 
+        - "content/flutter-logging/logging-01-intro.qmd"
+        - "content/flutter-logging/logging-02-app.qmd"
+        - "content/flutter-logging/logging-03-file.qmd"
     - part: I/O
       chapters: 
         - "content/dart-json/dart-json-basic.qmd"

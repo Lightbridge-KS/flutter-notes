@@ -1,0 +1,171 @@
+# Logging Intro
+
+::: {.callout-note appearance="simple" collapse="false"}
+### **Q** 
+
+I've build a Flutter app and use `debugPrint()` to log message in all my code. Now, the app is growing fast and I'd like to use `logging` package to manage app logging.
+
+Please teach me about the `logging` package. How it works and the benefits of using it.
+:::
+
+Great to hear you're expanding your Flutter knowledge! The `logging` package is an excellent choice for managing app logs as your Flutter app grows. Let me walk you through it with your background in mind.
+
+## What is the `logging` package?
+
+The `logging` package is Dart's official hierarchical logging library. Think of it like Python's `logging` module - it provides structured, configurable logging with different severity levels and the ability to route logs to different outputs.
+
+## Key Benefits over `debugPrint()`
+
+**Structured Logging:**
+- Hierarchical loggers (like `myapp.network`, `myapp.database`)
+- Severity levels (SEVERE, WARNING, INFO, CONFIG, FINE, etc.)
+- Rich log records with timestamps, logger names, and metadata
+
+**Production-Ready:**
+- Can be completely disabled in release builds
+- Route logs to files, network endpoints, or crash reporting services
+- No performance impact when disabled
+
+**Flexible Configuration:**
+- Control log levels per logger
+- Multiple output handlers
+- Custom formatting
+
+## Basic Usage
+
+Here's how you'd convert from `debugPrint()`:
+
+```dart
+import 'dart:developer' as developer;
+import 'package:logging/logging.dart';
+
+// Create loggers (usually as static final)
+final _logger = Logger('MyApp.HomePage');
+final _networkLogger = Logger('MyApp.Network');
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Before: debugPrint('HomePage initialized');
+    _logger.info('HomePage initialized');
+    
+    _fetchData();
+  }
+  
+  Future<void> _fetchData() async {
+    try {
+      // Before: debugPrint('Fetching user data...');
+      _networkLogger.info('Fetching user data...');
+      
+      final response = await api.getUserData();
+      
+      // Before: debugPrint('Data fetched successfully');
+      _networkLogger.info('Data fetched successfully', response.data);
+      
+    } catch (e) {
+      // Before: debugPrint('Error fetching data: $e');
+      _networkLogger.severe('Failed to fetch user data', e);
+    }
+  }
+}
+```
+
+## Logger Hierarchy
+
+Loggers follow a hierarchical naming convention:
+
+```
+MyApp                    <- Root logger
+├── MyApp.Network        <- Network operations
+├── MyApp.Database       <- Database operations
+├── MyApp.HomePage       <- Specific page
+└── MyApp.UserService    <- Business logic
+```
+
+Child loggers inherit settings from parents, similar to CSS cascade.
+
+## Configuration Setup
+
+Set this up early in your `main()` function:
+
+```dart
+import 'package:logging/logging.dart';
+import 'dart:developer' as developer;
+
+void main() {
+  _setupLogging();
+  runApp(MyApp());
+}
+
+void _setupLogging() {
+  // Set minimum log level
+  Logger.root.level = kDebugMode ? Level.ALL : Level.WARNING;
+  
+  // Listen to all log records
+  Logger.root.onRecord.listen((record) {
+    // Format log message
+    final message = '${record.level.name}: ${record.time}: '
+        '${record.loggerName}: ${record.message}';
+    
+    if (kDebugMode) {
+      // In debug mode, print to console
+      developer.log(
+        record.message,
+        time: record.time,
+        level: record.level.value,
+        name: record.loggerName,
+        error: record.error,
+        stackTrace: record.stackTrace,
+      );
+    }
+    
+    // In production, you might send to crash reporting
+    // crashlytics.log(message);
+  });
+}
+```
+
+## Log Levels (from highest to lowest severity)
+
+- `SEVERE` (1000): Serious failures
+- `WARNING` (900): Potential problems  
+- `INFO` (800): General information
+- `CONFIG` (700): Configuration messages
+- `FINE` (500): Tracing information
+- `FINER` (400): Fairly detailed tracing
+- `FINEST` (300): Highly detailed tracing
+
+## Practical Migration Strategy
+
+1. **Start with main areas:**
+   ```dart
+   final _authLogger = Logger('MyApp.Auth');
+   final _apiLogger = Logger('MyApp.API');
+   final _uiLogger = Logger('MyApp.UI');
+   ```
+
+2. **Replace `debugPrint()` gradually:**
+   ```dart
+   // Before
+   debugPrint('User logged in: ${user.email}');
+   
+   // After  
+   _authLogger.info('User logged in', {'email': user.email});
+   ```
+
+3. **Use appropriate levels:**
+   ```dart
+   _logger.fine('Button tapped');        // Debug info
+   _logger.info('Data loaded');          // General info
+   _logger.warning('Slow response');     // Potential issue
+   _logger.severe('Login failed', error); // Critical error
+   ```
+
+This approach gives you professional-grade logging that scales with your app. The hierarchical structure will help you debug specific areas, and you can easily adjust verbosity for different parts of your application.

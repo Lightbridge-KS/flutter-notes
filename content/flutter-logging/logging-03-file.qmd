@@ -1,0 +1,497 @@
+# File Logging
+
+Great! Let's extend the `AppLogger` to support file logging. This is particularly useful for debugging production issues or when you need persistent logs.
+
+## Enhanced AppLogger with File Logging
+
+```dart
+// lib/utils/app_logger.dart
+import 'package:logging/logging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:developer' as developer;
+import 'dart:io';
+
+class AppLogger {
+  AppLogger._();
+  
+  // Logger instances
+  static final auth = Logger('MyApp.Auth');
+  static final network = Logger('MyApp.Network');
+  static final database = Logger('MyApp.Database');
+  static final ui = Logger('MyApp.UI');
+  static final navigation = Logger('MyApp.Navigation');
+  static final storage = Logger('MyApp.Storage');
+  static final payment = Logger('MyApp.Payment');
+  static final analytics = Logger('MyApp.Analytics');
+  static final app = Logger('MyApp');
+  
+  // File logging configuration
+  static File? _logFile;
+  static bool _fileLoggingEnabled = false;
+  static int _maxLogFileSizeBytes = 5 * 1024 * 1024; // 5MB
+  static int _maxLogFiles = 3; // Keep 3 log files max
+  
+  /// Initialize logging with optional file logging
+  static Future<void> initialize({
+    bool enableFileLogging = true,
+    int maxLogFileSizeBytes = 5 * 1024 * 1024,
+    int maxLogFiles = 3,
+  }) async {
+    // Set configuration
+    _maxLogFileSizeBytes = maxLogFileSizeBytes;
+    _maxLogFiles = maxLogFiles;
+    
+    // Set log level
+    Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+    
+    // Initialize file logging if requested
+    if (enableFileLogging) {
+      await _initializeFileLogging();
+    }
+    
+    // Set up log listener
+    Logger.root.onRecord.listen(_handleLogRecord);
+    
+    app.info('AppLogger initialized (file logging: $_fileLoggingEnabled)');
+  }
+  
+  /// Initialize file logging
+  static Future<void> _initializeFileLogging() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final logDir = Directory('${directory.path}/logs');
+      
+      // Create logs directory if it doesn't exist
+      if (!await logDir.exists()) {
+        await logDir.create(recursive: true);
+      }
+      
+      // Create log file with timestamp
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      _logFile = File('${logDir.path}/app_log_$timestamp.txt');
+      
+      // Clean up old log files
+      await _cleanupOldLogFiles(logDir);
+      
+      _fileLoggingEnabled = true;
+      
+    } catch (e) {
+      developer.log('Failed to initialize file logging: $e', name: 'AppLogger');
+      _fileLoggingEnabled = false;
+    }
+  }
+  
+  /// Clean up old log files to maintain maximum count
+  static Future<void> _cleanupOldLogFiles(Directory logDir) async {
+    try {
+      final logFiles = logDir
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.contains('app_log_'))
+          .toList();
+      
+      // Sort by modification time (newest first)
+      logFiles.sort((a, b) => 
+          b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+      
+      // Delete excess files
+      if (logFiles.length >= _maxLogFiles) {
+        final filesToDelete = logFiles.skip(_maxLogFiles - 1);
+        for (final file in filesToDelete) {
+          await file.delete();
+          developer.log('Deleted old log file: ${file.path}', name: 'AppLogger');
+        }
+      }
+    } catch (e) {
+      developer.log('Error cleaning up log files: $e', name: 'AppLogger');
+    }
+  }
+  
+  /// Handle log records
+  static void _handleLogRecord(LogRecord record) {
+    final formattedMessage = _formatLogMessage(record);
+    
+    if (kDebugMode) {
+      // Console output in debug mode
+      developer.log(
+        record.message,
+        time: record.time,
+        level: record.level.value,
+        name: record.loggerName,
+        error: record.error,
+        stackTrace: record.stackTrace,
+      );
+    }
+    
+    // File output (if enabled)
+    if (_fileLoggingEnabled) {
+      _writeToFile(formattedMessage);
+    }
+    
+    // Production logging
+    if (kReleaseMode) {
+      _handleProductionLog(record);
+    }
+  }
+  
+  /// Format log message for file output
+  static String _formatLogMessage(LogRecord record) {
+    final timestamp = record.time.toIso8601String();
+    final level = record.level.name.padRight(7);
+    final logger = record.loggerName.padRight(20);
+    
+    var message = '[$timestamp] [$level] [$logger] ${record.message}';
+    
+    if (record.error != null) {
+      message += '\nError: ${record.error}';
+    }
+    
+    if (record.stackTrace != null) {
+      message += '\nStack trace:\n${record.stackTrace}';
+    }
+    
+    return message;
+  }
+  
+  /// Write message to log file
+  static void _writeToFile(String message) {
+    if (_logFile == null) return;
+    
+    try {
+      // Check file size and rotate if necessary
+      if (_logFile!.existsSync() && 
+          _logFile!.lengthSync() > _maxLogFileSizeBytes) {
+        _rotateLogFile();
+      }
+      
+      // Append to file
+      _logFile!.writeAsStringSync('$message\n', mode: FileMode.append);
+      
+    } catch (e) {
+      developer.log('Error writing to log file: $e', name: 'AppLogger');
+    }
+  }
+  
+  /// Rotate log file when it gets too large
+  static Future<void> _rotateLogFile() async {
+    try {
+      if (_logFile == null) return;
+      
+      final directory = _logFile!.parent;
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      final newLogFile = File('${directory.path}/app_log_$timestamp.txt');
+      
+      _logFile = newLogFile;
+      
+      // Clean up old files
+      await _cleanupOldLogFiles(directory);
+      
+    } catch (e) {
+      developer.log('Error rotating log file: $e', name: 'AppLogger');
+    }
+  }
+  
+  /// Handle production logging
+  static void _handleProductionLog(LogRecord record) {
+    // Send to crash reporting services
+    // FirebaseCrashlytics.instance.log('${record.level.name}: ${record.message}');
+    
+    if (record.level >= Level.SEVERE) {
+      // Send severe errors to monitoring
+      // Sentry.captureException(record.error ?? record.message);
+    }
+  }
+  
+  /// Get current log file path
+  static String? get currentLogFilePath => _logFile?.path;
+  
+  /// Check if file logging is enabled
+  static bool get isFileLoggingEnabled => _fileLoggingEnabled;
+  
+  /// Get all log files
+  static Future<List<File>> getLogFiles() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final logDir = Directory('${directory.path}/logs');
+      
+      if (!await logDir.exists()) return [];
+      
+      return logDir
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.contains('app_log_'))
+          .toList();
+    } catch (e) {
+      app.severe('Error getting log files', e);
+      return [];
+    }
+  }
+  
+  /// Read log file content
+  static Future<String> readLogFile(File logFile) async {
+    try {
+      return await logFile.readAsString();
+    } catch (e) {
+      app.severe('Error reading log file: ${logFile.path}', e);
+      return 'Error reading log file: $e';
+    }
+  }
+  
+  /// Export logs (for sharing or debugging)
+  static Future<File?> exportLogs() async {
+    try {
+      final logFiles = await getLogFiles();
+      if (logFiles.isEmpty) return null;
+      
+      final directory = await getApplicationDocumentsDirectory();
+      final exportFile = File('${directory.path}/exported_logs.txt');
+      
+      final buffer = StringBuffer();
+      buffer.writeln('=== APP LOGS EXPORT ===');
+      buffer.writeln('Export time: ${DateTime.now().toIso8601String()}');
+      buffer.writeln('');
+      
+      for (final logFile in logFiles) {
+        buffer.writeln('=== ${logFile.path.split('/').last} ===');
+        final content = await readLogFile(logFile);
+        buffer.writeln(content);
+        buffer.writeln('');
+      }
+      
+      await exportFile.writeAsString(buffer.toString());
+      app.info('Logs exported to: ${exportFile.path}');
+      
+      return exportFile;
+      
+    } catch (e) {
+      app.severe('Error exporting logs', e);
+      return null;
+    }
+  }
+  
+  /// Clear all log files
+  static Future<void> clearLogs() async {
+    try {
+      final logFiles = await getLogFiles();
+      for (final file in logFiles) {
+        await file.delete();
+      }
+      app.info('All log files cleared');
+    } catch (e) {
+      app.severe('Error clearing logs', e);
+    }
+  }
+  
+  /// Convenience methods
+  static void setLogLevel(String loggerName, Level level) {
+    Logger(loggerName).level = level;
+  }
+  
+  static void disableLogging() {
+    Logger.root.level = Level.OFF;
+  }
+  
+  static void enableFileLogging() async {
+    if (!_fileLoggingEnabled) {
+      await _initializeFileLogging();
+    }
+  }
+  
+  static void disableFileLogging() {
+    _fileLoggingEnabled = false;
+  }
+}
+```
+
+## Add Dependencies
+
+Add this to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  logging: ^1.2.0
+  path_provider: ^2.1.1
+```
+
+## Usage Examples
+
+**1. Initialize with file logging:**
+
+```dart
+// lib/main.dart
+import 'package:flutter/material.dart';
+import 'utils/app_logger.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize with file logging
+  await AppLogger.initialize(
+    enableFileLogging: true,
+    maxLogFileSizeBytes: 10 * 1024 * 1024, // 10MB
+    maxLogFiles: 5, // Keep 5 files
+  );
+  
+  runApp(MyApp());
+}
+```
+
+**2. Use normally (logs go to both console and file):**
+
+```dart
+// lib/services/api_service.dart
+import '../utils/app_logger.dart';
+
+class ApiService {
+  static Future<List<User>> fetchUsers() async {
+    AppLogger.network.info('Fetching users from API');
+    
+    try {
+      final response = await http.get(Uri.parse('/api/users'));
+      
+      AppLogger.network.info('Users fetched successfully', {
+        'count': response.data.length,
+        'statusCode': response.statusCode,
+      });
+      
+      return response.data;
+      
+    } catch (e, stackTrace) {
+      AppLogger.network.severe('Failed to fetch users', e, stackTrace);
+      rethrow;
+    }
+  }
+}
+```
+
+**3. Create a debug screen to view logs:**
+
+```dart
+// lib/screens/debug_screen.dart
+import 'package:flutter/material.dart';
+import '../utils/app_logger.dart';
+
+class DebugScreen extends StatefulWidget {
+  @override
+  _DebugScreenState createState() => _DebugScreenState();
+}
+
+class _DebugScreenState extends State<DebugScreen> {
+  List<File> logFiles = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadLogFiles();
+  }
+  
+  Future<void> _loadLogFiles() async {
+    final files = await AppLogger.getLogFiles();
+    setState(() {
+      logFiles = files;
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Debug Logs'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: _exportLogs,
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _clearLogs,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Log file info
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('File Logging: ${AppLogger.isFileLoggingEnabled ? "Enabled" : "Disabled"}'),
+                Text('Current Log: ${AppLogger.currentLogFilePath ?? "None"}'),
+                Text('Log Files: ${logFiles.length}'),
+              ],
+            ),
+          ),
+          
+          // Log files list
+          Expanded(
+            child: ListView.builder(
+              itemCount: logFiles.length,
+              itemBuilder: (context, index) {
+                final file = logFiles[index];
+                return ListTile(
+                  title: Text(file.path.split('/').last),
+                  subtitle: Text('Size: ${file.lengthSync()} bytes'),
+                  onTap: () => _viewLogFile(file),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _exportLogs() async {
+    final file = await AppLogger.exportLogs();
+    if (file != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logs exported to: ${file.path}')),
+      );
+    }
+  }
+  
+  Future<void> _clearLogs() async {
+    await AppLogger.clearLogs();
+    await _loadLogFiles();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Logs cleared')),
+    );
+  }
+  
+  void _viewLogFile(File file) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LogFileViewer(file: file),
+      ),
+    );
+  }
+}
+```
+
+## Key Features
+
+**Automatic File Management:**
+- Creates timestamped log files
+- Rotates when files get too large
+- Keeps only specified number of files
+- Cleans up old files automatically
+
+**Flexible Configuration:**
+- Enable/disable file logging
+- Set maximum file size
+- Set maximum number of files
+- Export logs for debugging
+
+**Production Ready:**
+- Works in both debug and release modes
+- Handles file system errors gracefully
+- Minimal performance impact
+
+This file logging system will help you debug production issues and maintain a persistent record of your app's behavior. The logs are stored locally and can be easily exported for analysis or sharing with your team.
+
+Would you like me to show you how to integrate this with cloud storage or how to create filters for viewing specific log levels?
