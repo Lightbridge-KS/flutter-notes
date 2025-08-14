@@ -109,8 +109,10 @@ bibliography: references.bib
 format:
   html:
     theme:
+      light:
       - cosmo
-      - brand
+      dark: 
+      - darkly
     toc-depth: 4
 
 freeze: auto
