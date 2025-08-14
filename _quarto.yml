@@ -24,7 +24,7 @@ book:
         - "content/dart-basic/dart-pkg-local.qmd"
         - "content/dart-basic/dart-pkg-app.qmd"
         - "content/dart-basic/dart-lib-org.qmd"
-        - "content/dart-basic/dart-async.qmd"
+
         - "content/dart-basic/dart-string.qmd"
     - part: OOP
       chapters: 
@@ -36,6 +36,10 @@ book:
         - "content/dart-oop/dart-factory.qmd"
         - "content/dart-oop/dart-factory-json.qmd"
         - "content/dart-oop/dart-interface-abs.qmd"
+    - part: Async
+      chapters: 
+        - "content/dart-async/dart-async.qmd"
+        - "content/dart-async/dart-stream.qmd"
     - part: I/O
       chapters: 
         - "content/dart-json/dart-json-basic.qmd"
