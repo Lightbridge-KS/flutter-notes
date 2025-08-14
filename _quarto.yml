@@ -41,6 +41,7 @@ book:
         - "content/dart-async/dart-stream.qmd"
     - part: Logging
       chapters: 
+        - "content/flutter-logging/logging-vs-exception.qmd"
         - "content/flutter-logging/logging-01-intro.qmd"
         - "content/flutter-logging/logging-02-app.qmd"
         - "content/flutter-logging/logging-03-file.qmd"

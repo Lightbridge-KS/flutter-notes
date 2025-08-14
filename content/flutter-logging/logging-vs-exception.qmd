@@ -1,0 +1,182 @@
+# Logging vs Exception
+
+
+::: {.callout-note appearance="default" collapse="false"}
+### Q
+
+In Dart and Flutter app development, there are ways to show that things are not going as expected by "throwing" exception. Also, there is a logging mechanism like `logging` package that we can set logging level from FINEST to SHOUT. 
+
+Q: How do we know when to throw exception or use logging for each aim we want to achieve?
+
+Please break it down for me. Explain.
+:::
+
+Great question! Understanding when to throw exceptions versus when to use logging is crucial for building robust Flutter apps. Let me break this down based on your programming background.
+
+## Exception Throwing vs Logging: The Core Difference
+
+**Exception throwing** is for **stopping program execution** when something goes wrong that the current code can't handle.
+
+**Logging** is for **recording information** while the program continues running normally.
+
+## When to Throw Exceptions
+
+Throw exceptions when:
+
+**1. Unrecoverable Errors**
+```dart
+// User passes invalid data that breaks your function
+int divide(int a, int b) {
+  if (b == 0) {
+    throw ArgumentError('Cannot divide by zero');
+  }
+  return a ~/ b;
+}
+```
+
+**2. Contract Violations**
+```dart
+// API returns unexpected format
+Map<String, dynamic> parseUserData(String json) {
+  final data = jsonDecode(json);
+  if (!data.containsKey('id')) {
+    throw FormatException('Missing required field: id');
+  }
+  return data;
+}
+```
+
+**3. Resource Access Failures**
+```dart
+// File doesn't exist and app can't continue
+Future<String> loadConfig() async {
+  final file = File('config.json');
+  if (!await file.exists()) {
+    throw FileSystemException('Config file not found', 'config.json');
+  }
+  return await file.readAsString();
+}
+```
+
+## When to Use Logging
+
+Use logging when:
+
+**1. Debugging Information**
+```dart
+import 'package:logging/logging.dart';
+
+final _logger = Logger('UserService');
+
+Future<User?> fetchUser(String id) async {
+  _logger.info('Fetching user with id: $id');
+  
+  try {
+    final response = await http.get('/users/$id');
+    _logger.fine('Received response: ${response.statusCode}');
+    
+    if (response.statusCode == 404) {
+      _logger.warning('User not found: $id');
+      return null; // This is expected, don't throw
+    }
+    
+    return User.fromJson(response.data);
+  } catch (e) {
+    _logger.severe('Failed to fetch user: $e');
+    rethrow; // Log then re-throw for caller to handle
+  }
+}
+```
+
+**2. Performance Monitoring**
+```dart
+void processLargeDataset(List<Data> dataset) {
+  _logger.info('Processing ${dataset.length} items');
+  final stopwatch = Stopwatch()..start();
+  
+  // ... processing logic ...
+  
+  stopwatch.stop();
+  _logger.info('Processing completed in ${stopwatch.elapsedMilliseconds}ms');
+}
+```
+
+**3. Business Logic Flow**
+```dart
+Future<void> processPayment(Payment payment) async {
+  _logger.info('Processing payment ${payment.id} for ${payment.amount}');
+  
+  if (payment.amount > 1000) {
+    _logger.warning('High-value payment detected: ${payment.amount}');
+    // Continue processing, just log for monitoring
+  }
+  
+  // ... payment logic ...
+  _logger.info('Payment ${payment.id} completed successfully');
+}
+```
+
+## Practical Decision Tree
+
+```
+Error Occurred?
+├── Can the app continue normally?
+│   ├── YES → Log it (INFO/WARNING/SEVERE)
+│   └── NO → Throw Exception
+└── Is this expected behavior?
+    ├── YES → Log it (INFO/FINE)
+    └── NO → Evaluate severity
+        ├── Critical → Throw Exception
+        └── Non-critical → Log it (WARNING)
+```
+
+## Logging Levels Guide
+
+Based on your Python experience, here's the mapping:
+
+- **FINEST/FINER** → Like Python's `DEBUG` - Detailed diagnostic info
+- **FINE** → Detailed info for debugging specific issues
+- **INFO** → General information about program flow
+- **WARNING** → Something unexpected but recoverable happened
+- **SEVERE** → Serious error occurred (often logged before throwing)
+- **SHOUT** → Critical system failure
+
+## Real Flutter Example
+
+```dart
+class ApiService {
+  final _logger = Logger('ApiService');
+  
+  Future<List<Post>> getPosts() async {
+    _logger.info('Fetching posts from API');
+    
+    try {
+      final response = await http.get('/posts');
+      
+      if (response.statusCode == 200) {
+        _logger.fine('Successfully fetched ${response.data.length} posts');
+        return response.data.map((json) => Post.fromJson(json)).toList();
+      } else if (response.statusCode == 429) {
+        _logger.warning('Rate limit exceeded, will retry later');
+        return []; // Return empty list, let UI handle gracefully
+      } else {
+        _logger.severe('API returned error: ${response.statusCode}');
+        throw ApiException('Failed to fetch posts: ${response.statusCode}');
+      }
+    } on SocketException {
+      _logger.severe('Network connection failed');
+      throw NetworkException('No internet connection');
+    } catch (e) {
+      _logger.severe('Unexpected error fetching posts: $e');
+      rethrow;
+    }
+  }
+}
+```
+
+## Key Takeaway
+
+**Exception = "Stop everything, something's broken"**
+**Logging = "Keep a record of what's happening"**
+
+Think of exceptions like your hospital's emergency alarm system - you only trigger it when immediate action is required. Logging is like medical records - you document everything for later analysis and monitoring.
