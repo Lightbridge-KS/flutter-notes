@@ -1,0 +1,91 @@
+# Deploy Localhost
+
+::: {.callout-note appearance="default" collapse="false"}
+**Q:** Let's say I have build a simple Flutter app to "web" target with:
+
+```zsh
+flutter build web --no-web-resources-cdn --release
+```
+
+I want to serve this app to a localhost with certain port in my MacBook Pro. This app can work with client-side logic only (no API call, no database connection, no routing).
+:::
+
+
+Here are the main approaches to serve your Flutter web app locally:
+
+## **Approaches & Options**
+
+### **1. Python HTTP Server** ⭐ (Recommended for you)
+Since you prefer Python, this is the simplest approach:
+- Uses Python's built-in `http.server` module
+- No additional installations needed
+- Can specify custom port easily
+
+### **2. Flutter Development Server**
+- Use Flutter's built-in web server
+- Good for development/testing
+- Automatic reload capabilities
+
+### **3. Node.js `serve` Package**
+- If you have Node.js installed
+- Very lightweight and fast
+- Good port management
+
+### **4. VS Code Live Server**
+- Since you use VS Code
+- GUI-based approach
+- Browser auto-refresh
+
+---
+
+## **Specific Commands**
+
+### **Option 1: Python HTTP Server** (Simplest)
+```zsh
+# Navigate to your Flutter web build directory
+cd your_flutter_project/build/web
+
+# Serve on default port 8000
+python3 -m http.server
+
+# Serve on custom port (e.g., 3000)
+python3 -m http.server 3000
+```
+
+### **Option 2: Flutter Web Server**
+```zsh
+# In your Flutter project root
+flutter run -d web-server --web-port=3000 --web-hostname=localhost
+
+# Or for release mode
+flutter run -d web-server --web-port=3000 --release
+```
+
+### **Option 3: Node.js serve** (if Node.js installed)
+```zsh
+# Install globally (one-time)
+npm install -g serve
+
+# Serve the build directory
+cd your_flutter_project/build/web
+serve -s . -l 3000
+```
+
+### **Simple ASCII Diagram:**
+
+```
+Flutter Project Structure:
+├── lib/
+├── web/
+├── build/
+│   └── web/          ← Serve this directory
+│       ├── index.html
+│       ├── main.dart.js
+│       └── assets/
+└── pubspec.yaml
+
+Flow:
+[Flutter Build] → [build/web/] → [HTTP Server] → [localhost:port]
+```
+
+**Recommendation:** Start with **Option 1 (Python)** since it's built into macOS, requires no setup, and aligns with your Python preference. Just `cd` into `build/web` and run `python3 -m http.server 3000` to serve on port 3000.
