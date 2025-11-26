@@ -215,3 +215,82 @@ final class DicomUnauthorized extends DicomLoadResult {
 ```
 
 Now when you handle DICOM loading, the compiler **forces** you to think about all error cases - no forgotten edge cases that could crash your radiology app!
+
+
+## Examples
+
+### Result Type
+
+**File:** lib/core/result.dart (NEW)
+
+**Implementation:**
+
+```dart
+ /// Represents the result of an operation that can succeed or fail
+ sealed class Result<T, E> {
+   const Result();
+ }
+
+ /// Success case containing the result value
+ final class Success<T, E> extends Result<T, E> {
+   final T value;
+   const Success(this.value);
+ }
+
+ /// Failure case containing the error
+ final class Failure<T, E> extends Result<T, E> {
+   final E error;
+   const Failure(this.error);
+ }
+
+ // Extension methods for convenience
+ extension ResultExtensions<T, E> on Result<T, E> {
+   bool get isSuccess => this is Success<T, E>;
+   bool get isFailure => this is Failure<T, E>;
+
+   T? get valueOrNull => switch (this) {
+     Success(value: final v) => v,
+     Failure() => null,
+   };
+
+   E? get errorOrNull => switch (this) {
+     Success() => null,
+     Failure(error: final e) => e,
+   };
+ }
+
+```
+
+
+### Calculator Error Types
+
+**File:** lib/services/calculator/calculator_error.dart (NEW)
+
+**Error Hierarchy:**
+
+```dart
+/// Base sealed class for calculator errors
+sealed class CalculatorError {
+  final String message;
+  const CalculatorError(this.message);
+}
+
+/// Input parsing failed (non-numeric, invalid format)
+final class ParseError extends CalculatorError {
+  final String fieldName;
+  final String input;
+
+  ParseError(this.fieldName, this.input)
+    : super('$fieldName must be a valid number');
+}
+
+/// Business rule validation failed
+final class ValidationError extends CalculatorError {
+  ValidationError(String message) : super(message);
+}
+
+/// Mathematical operation error
+final class CalculationError extends CalculatorError {
+  CalculationError(String message) : super(message);
+}
+```
