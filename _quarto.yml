@@ -35,6 +35,7 @@ book:
         - "content/dart-oop/dart-factory.qmd"
         - "content/dart-oop/dart-factory-json.qmd"
         - "content/dart-oop/dart-interface-abs.qmd"
+        - "content/dart-oop/dart-sealed-class.qmd"
     - part: Async
       chapters: 
         - "content/dart-async/dart-async.qmd"

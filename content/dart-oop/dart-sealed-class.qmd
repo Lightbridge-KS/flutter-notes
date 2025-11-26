@@ -1,0 +1,217 @@
+# Sealed Classes in Dart
+
+
+Sealed classes are one of Dart's most powerful features for type-safe error handling. Think of them as a way to create a **closed set of subtypes** that the compiler knows about completely.
+
+## The Core Concept
+
+
+In simple terms, a sealed class is a class that:
+
+1. Cannot be directly instantiated
+2. Can only be extended/implemented within the **same library**
+3. Forces the compiler to know **all possible subtypes**
+
+Here's a visual representation:
+
+```
+Regular Class Hierarchy           Sealed Class Hierarchy
+=====================             ====================
+
+    Animal                           Result (sealed)
+      |                                    |
+      |-- anywhere in                      |-- only in same library
+      |   your codebase                    |
+      |                                    |
+  ┌───┴───┬────┬────┐               ┌──────┴──────┐
+  |       |    |    |               |             |
+ Dog    Cat  Bird  ?              Success      Failure
+                   ?                            
+ (can add more)                  (complete set!)
+```
+
+## Basic Example
+
+
+Let me show you a practical example - handling API responses:
+
+```dart
+// Define the sealed class
+sealed class Result<T> {
+  const Result();
+}
+
+// All subtypes must be in the same file
+final class Success<T> extends Result<T> {
+  final T data;
+  const Success(this.data);
+}
+
+final class Failure<T> extends Result<T> {
+  final String error;
+  const Failure(this.error);
+}
+```
+
+## The Magic: Exhaustive Pattern Matching
+
+
+Now here's where sealed classes shine. When you use pattern matching with a sealed class, **the compiler forces you to handle ALL cases**:
+
+```dart
+String handleResult(Result<String> result) {
+  return switch (result) {
+    Success(data: var d) => 'Got data: $d',
+    Failure(error: var e) => 'Error: $e',
+    // If you forget a case, you get a COMPILE-TIME error!
+  };
+}
+```
+
+If you try to omit one of the cases:
+
+```dart
+String handleResult(Result<String> result) {
+  return switch (result) {
+    Success(data: var d) => 'Got data: $d',
+    // Compiler error: "The type 'Result<String>' is not exhaustively matched"
+  };
+}
+```
+
+## Compare with Regular Classes
+
+
+With a regular abstract class, this wouldn't work:
+
+```dart
+// Regular abstract class
+abstract class ApiResponse {
+  const ApiResponse();
+}
+
+class Loading extends ApiResponse {}
+class Success extends ApiResponse {}
+class Error extends ApiResponse {}
+
+// Someone in another file could add:
+class SomeOtherCase extends ApiResponse {}
+
+// The compiler can't enforce exhaustiveness!
+String handle(ApiResponse response) {
+  return switch (response) {
+    Loading() => 'loading',
+    Success() => 'success',
+    // Compiler doesn't know about all possible subtypes
+  };
+}
+```
+
+## Real-World Pattern: State Management
+
+
+Here's a practical example you might use in Flutter - representing UI states:
+
+```dart
+sealed class LoadingState<T> {
+  const LoadingState();
+}
+
+final class Initial<T> extends LoadingState<T> {
+  const Initial();
+}
+
+final class Loading<T> extends LoadingState<T> {
+  const Loading();
+}
+
+final class Loaded<T> extends LoadingState<T> {
+  final T data;
+  const Loaded(this.data);
+}
+
+final class LoadError<T> extends LoadingState<T> {
+  final String message;
+  final Exception? exception;
+  const LoadError(this.message, [this.exception]);
+}
+
+// In your Flutter widget:
+Widget buildContent(LoadingState<List<Patient>> state) {
+  return switch (state) {
+    Initial() => Text('Tap to load patients'),
+    Loading() => CircularProgressIndicator(),
+    Loaded(data: var patients) => PatientList(patients),
+    LoadError(message: var msg) => ErrorWidget(msg),
+    // Must handle all cases - compiler enforces this!
+  };
+}
+```
+
+## Connection to Your Python Experience
+
+
+If you've used Python's typing with `Union` types and `match` statements (Python 3.10+), sealed classes are similar but **compiler-enforced**:
+
+```python
+# Python (not enforced at compile time)
+from typing import Union
+from dataclasses import dataclass
+
+@dataclass
+class Success:
+    data: str
+
+@dataclass
+class Failure:
+    error: str
+
+Result = Union[Success, Failure]
+
+# mypy can check this, but not enforced at runtime
+def handle(result: Result) -> str:
+    match result:
+        case Success(data):
+            return f"Got: {data}"
+        # If you forget Failure, mypy warns but Python runs
+```
+
+Dart's sealed classes give you this pattern with **compile-time guarantees**.
+
+## Key Benefits for Your Radiology AI Work
+
+
+1. **API Response Handling**: Model different response states type-safely
+2. **Image Processing States**: Represent processing pipeline states
+3. **Validation Results**: Handle validation with all edge cases covered
+4. **Error Types**: Create domain-specific error hierarchies
+
+Example for medical imaging:
+
+```dart
+sealed class DicomLoadResult {
+  const DicomLoadResult();
+}
+
+final class DicomLoaded extends DicomLoadResult {
+  final DicomImage image;
+  final DicomMetadata metadata;
+  const DicomLoaded(this.image, this.metadata);
+}
+
+final class DicomCorrupted extends DicomLoadResult {
+  final String reason;
+  const DicomCorrupted(this.reason);
+}
+
+final class DicomNotFound extends DicomLoadResult {
+  final String path;
+  const DicomNotFound(this.path);
+}
+
+final class DicomUnauthorized extends DicomLoadResult {
+  const DicomUnauthorized();
+}
+```
+
+Now when you handle DICOM loading, the compiler **forces** you to think about all error cases - no forgotten edge cases that could crash your radiology app!
